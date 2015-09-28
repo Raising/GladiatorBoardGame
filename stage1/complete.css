@@ -1,0 +1,94 @@
+#gameArea {
+	perspective:2300px;
+}
+
+#grillVertical {
+	position:absolute;
+	left:100px;
+
+	width:900px;
+	height: 900px;
+}
+#grillHorizontal{
+	position:absolute;
+	left:150px;
+	width:900px;
+	height: 900px;
+	background: linear-gradient(to right, rgba(241,231,103,1) 0%, rgba(224,147,32,1) 57%, rgba(254,182,69,1) 99%, rgba(254,182,69,1) 100%);
+	border: 10px solid #634e18;
+}
+
+.grillLayer{
+	position: absolute;
+	/*background-color: RGBA(30,30,30,0.1);
+*/
+	width:900px;
+	height: 900px;
+
+}
+
+.noMouse{
+	pointer-events:none;
+}
+
+.tileDiv{
+	position:absolute;
+	width: 0px;
+	height:0px;
+}
+
+.tileImg{
+
+	position:absolute;
+	width: 70px;
+	height: 62px;
+	left:-35px;
+	top:-31px;
+	
+}
+.tileText{
+	position:absolute;
+	top:-8px;
+	left: -5px;
+	font-size: 14px;
+
+}
+
+.character{
+	position:absolute;
+	width:42px;
+	height: 42px;
+	border-radius: 50%;
+	background-color: RGBA(230,190,40,0.7);
+}
+
+.charDiv{
+	position:absolute;
+	width:46px;
+	height:46px;
+	border-radius: 50%;
+	background-color: RGBA(230,110,120,0.9);
+}
+
+.charImg{
+	position:absolute;
+	width: 40px;
+	height: 48px;
+	left:2px;
+	top:-5px;
+}
+
+.iconImg{
+	position:absolute;
+	width: 40px;
+	height: 40px;
+	opacity: 0.4;
+}
+
+.glaciatorMainContainer{
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(176,176,176,0.86) 1%, rgba(173,173,173,0.86) 2%, rgba(133,133,133,1) 15%, rgba(102,102,102,1) 25%, rgba(19,19,19,1) 100%);
+  border: 2px solid black;
+}

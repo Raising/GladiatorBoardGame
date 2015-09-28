@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>Elementary canvas</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  		  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  		  <link href="complete.css" rel="stylesheet">
+  		  <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.13.2/TweenMax.min.js"></script>
+        <script type="text/javascript" src="../libs/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="../libs/Draggable.min.js"></script>
+        <script type="text/javascript" src="../libs/CSSPlugin.min.js"></script>
+        <script type="text/javascript" src="../libs/DrawSVGPlugin.js"></script>
+ <script type="text/javascript" src="../js/fastExploration.js"></script>
+        <script type="text/javascript" src="../js/gladiator.js"></script>
+	<!--	<script type="text/javascript" src="AnimationRaisingModule.js"></script>
+        <script type="text/javascript" src="functionality.js"></script>
+-->
+    </head>
+    <body>
+        <div id = "controlers">
+
+
+
+        </div>
+        <div id = "gameArea">   
+            <div id="grillVertical">
+                <div id="grillHorizontal">
+                    <div id="Terrain" class="grillLayer  noMouse"></div>
+                    <div id="Characters" class="grillLayer "></div>
+                    <div id="Effects"  class="grillLayer noMouse"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+     
+      //  var bbMap = new BB.Grill(15,15);
+    //    bbMap.createTileMatrix();
+
+        //var act1 = new BB.ActorsHandler(14,bbMap);
+        var lonelyGladiator = GBG.FieldEntityModel({});
+        
+        lonelyGladiator.insertViewInto($("#Characters"));
+        new TimelineMax()
+      //  .staggerFrom($(".tileDiv"), 1, { rotationY:-90,autoAlpha:0,  transformOrigin:"50% 50% ", ease:Sine.easeOut},0.002)
+    //    .staggerFrom($(".charDiv"), 1, { scale:0,  transformOrigin:"50% 50% ", ease:Elastic.easeOut},0.030)
+   
+        .to($("#grillVertical"), 1.6, { rotationX:60,  transformOrigin:"50% 60% ", ease:Bounce.easeOut})
+        .to($("#grillHorizontal"), 1.6, { rotationZ:-40,  transformOrigin:"50% 50%", ease:Sine.easeOut})
+        
+        ;
+    
+
+        
+        </script>
+
+    <body>
+
+        
+
+
+
+    </body>
+
+    </body>
