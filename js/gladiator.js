@@ -1,12 +1,12 @@
 var GBG = {autor:'Ignacio Medina Castillo, Raising Spirit', github:'https://github.com/Raising', version:0.1, projectName:'Gladiator Board Game'};
 
 GBG.FieldEntityModel = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
-  me.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.StatusHandler());
-  me.localization  = (params.localization   ? params.localization  :  GBG.Localization());
-  me.displacement  = (params.displacement   ? params.displacement  :  GBG.Displacement());
-  me.view          = (params.view           ? params.view          :  GBG.FieldEntityView());
+  this.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.StatusHandler());
+  this.localization  = (params.localization   ? params.localization  :  GBG.Localization());
+  this.displacement  = (params.displacement   ? params.displacement  :  GBG.Displacement());
+  this.view          = (params.view           ? params.view          :  GBG.FieldEntityView());
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
@@ -22,11 +22,13 @@ GBG.FieldEntityModel = function( params ){
 
 
 GBG.FieldEntityView = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
-  me.mainContainer = $('<div class="glaciatorMainContainer"></div>');
-  me.actionArcs = [];
-  
+  this.mainContainer = $('<div class="glaciatorMainContainer"></div>');
+  this.arcHandler =   (params.arcHandler    ? params.arcHandler :  GBG.ArcHandler());
+
+  this.mainContainer.append(me.arcHandler.getArcGraphics());
+  this.arcHandler.addActionArc(GBG.ActionArc());
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos
       getView: function(){
@@ -39,7 +41,7 @@ GBG.FieldEntityView = function( params ){
       },
       
       addActionArc : function(actionArc){
-        me.actionArcs.push(actionArc);
+        me.arcHandler.addActionArc(actionArc);
       },
       
       
@@ -48,18 +50,68 @@ GBG.FieldEntityView = function( params ){
   return newObject; 
 };
 
+GBG.ArcHandler = function( params ){
+  var params = params ? params : {};
+  var me = this;
+  this.actionArcs = [];
+  this.id = 'archandler';
+ //= document.createElement('svg');
+  this.graphic = $('<svg width="100px" height="100px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"></svg>');
+
+  $(this.graphic).addClass('gladiadorSVG'); 
+ /* this.graphic.setAttribute("y","10px");
+  this.graphic.setAttribute('width','100px');
+  this.graphic.setAttribute('height','100px');
+  this.graphic.setAttribute('viewBox','0 0 100 100');
+  this.graphic.setAttribute('style','enable-background:new 0 0 100 100;');
+this.graphic.setAttribute('xml:space','preserve');*/
+
+
+ 
+ 
+  var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  //Metodos Publicos  
+    addActionArc : function(actionArc){
+    
+       me.graphic[0].appendChild(actionArc.getGraphic());
+       me.actionArcs.push(actionArc);
+    },
+    getArcGraphics: function(){
+      return me.graphic;
+    },
+  };
+  
+  return newObject; 
+};
+
+
 
 GBG.ActionArc = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
-  me.deepLevel = params.deepLevel ? params.deepLevel : 1; //deepLevel es la distancia desde el borde al centro pongamos un maximo de 6 niveles ppor ejemplo la idea es que no se superpongan dibujos.
-  me.widthLevels = params.widthLevels ? params.widthLevels : {main:30,left1:20,left2:20,right1:10,rigth2:15};
- // me.svgLine = GBG
+  this.deepLevel = params.deepLevel ? params.deepLevel : 1; //deepLevel es la distancia desde el borde al centro pongamos un maximo de 6 niveles ppor ejemplo la idea es que no se superpongan dibujos.
+  this.widthLevels = params.widthLevels ? params.widthLevels : {main:30,left1:20,left2:20,right1:10,rigth2:15};
+  this.orientation = params.orientation ? params.orientation : 180;
+ // me.graphic = $('<rect x="150" y="100" class="box" width="50" height="50"/>');
+
+   me.graphicArc = document.createElementNS("http://www.w3.org/2000/svg", 'circle'); //Create a path in SVG's namespace
+   me.graphicArc.setAttribute("x","0"); 
+   me.graphicArc.setAttribute("y","0");
+   me.graphicArc.setAttribute("fill","none") ;
+   me.graphicArc.setAttribute("r","45"); 
+   me.graphicArc.setAttribute("cx","50"); 
+   me.graphicArc.setAttribute("cy","50");
+    //Set path's data
+   me.graphicArc.style.stroke = "#990"; //Set stroke colour
+   me.graphicArc.style.strokeWidth = "5px"; //Set stroke width
+
   
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
-    
+    getGraphic: function(){
+      return me.graphicArc;
+    },
   };
   
   return newObject; 
@@ -71,7 +123,7 @@ GBG.ActionArc = function( params ){
 
 
 GBG.Localization = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
@@ -95,12 +147,12 @@ GBG.Wound = function( params ){
 };
 
 GBG.StatusHandler = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
   //metodos y variables prvadas
-  me.stamina = params.stamina ? params.stamina : 6;
-  me.health = params.health ? params.health : 6;
-  me.wounds = [];
+  this.stamina = params.stamina ? params.stamina : 6;
+  this.health = params.health ? params.health : 6;
+  this.wounds = [];
   
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
@@ -113,7 +165,7 @@ GBG.StatusHandler = function( params ){
 
 
 GBG.Movement = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
   this.template = params.template ? params.template : {};
   
@@ -126,7 +178,7 @@ GBG.Movement = function( params ){
 };
 
 GBG.Displacement = function( params ){
-  params = params ? params : {};
+  var params = params ? params : {};
   var me = this;
   this.movementPositbilities = params.movementPositbilities ? params.movementPositbilities : [];
   
@@ -141,3 +193,12 @@ GBG.Displacement = function( params ){
 GBG.Wound = function( params ){
   
 };
+
+/*
+ var svg = document.getElementsByTagName('svg')[0]; //Get svg element
+var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path'); //Create a path in SVG's namespace
+newElement.setAttribute("d","M 0 0 L 10 10"); //Set path's data
+newElement.style.stroke = "#000"; //Set stroke colour
+newElement.style.strokeWidth = "5px"; //Set stroke width
+svg.appendChild(newElement);
+*/
