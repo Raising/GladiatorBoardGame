@@ -5,8 +5,8 @@ if (typeof Object.create !== 'function'){
     var F = function () {};
     F.prototype = o;
     return new F();
-  }
-};
+  };
+}
 
 
 Function.method('new', function(){

@@ -78,17 +78,17 @@ BB.Grill = function(x,y){
 				grill.targetDiv.append(grill.tileMatrix[i][j].getTile());
 			}
 		}	
-	}
+	};
 
 	this.getInTile = function(x,y,character){
 		console.log(x,y,character);
 		grill.tileMatrix[x][y].setCharacter(character);
 		return grill.tileMatrix[x][y];
-	}
+	};
 	this.getCharacterInTile = function(x,y){
 		return grill.tileMatrix[x][y].getCharacter();
-	}
-}
+	};
+};
 
 BB.Character = function(type,map){
 
@@ -174,8 +174,8 @@ BB.Character = function(type,map){
 
 
 		});
-	}
-}
+	};
+};
 
 
 BB.ActorsHandler = function(numCharacters,map){
@@ -196,7 +196,7 @@ BB.ActorsHandler = function(numCharacters,map){
 			actorsHandler.targetDiv.append(actorsHandler.charactersArray[j].getCharacter());
 		}
 	}
-}
+};
 
 
 
@@ -223,12 +223,12 @@ BB.DangerZone = function(x,y,kind){
 		var xTile = dangerZone.x+centerX;
 		var yTile = dangerZone.y+centerY+(centerX)%2*(Math.abs(xTile+1))%2;
 		TweenMax.to(dangerZone.icon,0.5,{x:xTile*45+80,y:yTile*50+(Math.abs(xTile)%2)*25+80});
-	}
+	};
 
 	this.getIcon = function(){
 		return dangerZone.icon;
-	}
-}
+	};
+};
 
 
 
@@ -293,26 +293,26 @@ BB.Weapon = function(kind){
 
 	this.getArea = function(){
 		return weapon.area;
-	}
+	};
 	this.putArea = function(elementoPadre){
 		for (var i = 0;i< weapon.area.length;i++){
 			$("#"+elementoPadre).append(weapon.area[i].getIcon());
 		 }
-	}
+	};
 
 	this.removeArea = function(elementoPadre){
 			for (var i = 0;i< weapon.area.length;i++){
 			$("#"+elementoPadre).remove(weapon.area[i].getIcon());
 		 }
-	}
+	};
 
 	this.setArea = function(x,y){
 		for (var i = 0;i< weapon.area.length;i++){
 			weapon.area[i].setPosition(x,y);
 		}
-	}
+	};
 
-}
+};
 
 
 
