@@ -12,6 +12,8 @@ Math.radians = function(degrees) {
 
 var GBG = {autor:'Ignacio Medina Castillo, Raising Spirit', github:'https://github.com/Raising', version:0.1, projectName:'Gladiator Board Game'};
 
+
+
 //Constants
 GBG.GLADIATOR_RAIDUS = 50;
 GBG.GLADIATOR_ARC_params = 3;
@@ -55,7 +57,7 @@ GBG.FieldEntityModel = function( params ){
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
     insertViewInto : function(element){
-      return $(element).append(me.view.getView());
+      $(element).append(me.view.getView());
     },  
     relativeMovement : function(params){
       me.localization.modifyPositionRelatedToOrientation(params.position);
@@ -76,7 +78,11 @@ GBG.FieldEntityModel = function( params ){
       for (var i = 0 ; i<numEquipment; i++ ){
         me.view.addActionArc(me.equipment[i]);
       }
-    }
+    },
+    loadDisplacement : function() {
+      me.displacement.loadMovements(me.movements);
+      me.displacement.attachTo(me.view.getView());
+    },
   };
   
   return newObject; 
@@ -88,7 +94,7 @@ GBG.FieldEntityModel = function( params ){
 GBG.FieldEntityView = function( params ){
   params = params ? params : {};
   var me = this;
-  this.mainContainer = $('<div class="glaciatorMainContainer"></div>');
+  this.mainContainer = $('<div class="XwingMainContainer"></div>');
   this.arcHandler =  GBG.create('ArcHandler',params);
   
 
@@ -106,7 +112,7 @@ GBG.FieldEntityView = function( params ){
       },
       moveTo:function(localization){
         var tl = new TimelineMax();
-        tl.to(me.mainContainer,  0.5, { x:localization.position.x,y:localization.position.y,transformOrigin:"50% 50%", ease:Elastic.easeOut});
+        tl.to(me.mainContainer,  0.5, { x:localization.position.x,y:localization.position.y,transformOrigin:"50% 50%", ease:Sine.easeOut});
         tl.to(me.mainContainer,  0.3, { rotation:localization.rotation,transformOrigin:"50% 50%"});
       },
       addActionArc : function(params){
@@ -357,8 +363,8 @@ GBG.Displacement = function( params ){
   params = params ? params : {};
   var me = this;
   //this.movementPositbilities = params ? params : [];
-  this.container = $('<div></div>');
-  
+  this.container = $('<div class="displacementContainer"></div>');
+  this.movementOptions = [];
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
@@ -372,6 +378,20 @@ GBG.Displacement = function( params ){
     addMovement : function(params){
       var newMovement = GBG.create('Movement',params);
       
+    },
+    loadMovements : function(movements){
+      me.container.empty();
+      me.movementOptions = [];
+      var numberOfMovements = movements.length;
+      for (var i = 0;i <numberOfMovements; i++){
+        var newMovement = GBG.create('Movement',movements[i]);
+        me.movementOptions.push(newMovement);
+        newMovement.attachViewTo(me.container);
+        newMovement.setViewPosition();
+      }
+    },
+    attachTo : function(element){
+      $(element).append(me.container);
     }
   };
   
@@ -393,8 +413,8 @@ GBG.Movement = function( params ){
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
-     anexViewTo : function(element){
-       me.view.anexViewTo(element);
+     attachViewTo : function(element){
+       me.view.attachViewTo(element);
      }, 
      setViewPosition : function(){
        me.view.setLocation({rotation:me.relativeRotation,position:me.relativePosition});
@@ -415,11 +435,11 @@ GBG.MovementView = function( params ){
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
-    anexViewTo : function (element){
+    attachViewTo : function (element){
       $(element).append(me.container);
     },
     setLocation : function(params){
-      TweenMax.to(me.container,0.3,{ rotation:params.rotation,x:params.position.x,y:params.position.y,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      TweenMax.to(me.container,0.3,{ x:params.position.x,y:params.position.y,rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
     },
     hide : function(){
       TweenMax.to(me.container,0.3,{ opacity:0,transformOrigin:"50% 50%", ease:Sine.easeOut});

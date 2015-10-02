@@ -41,18 +41,36 @@
         var lonelyGladiator = GBG.create('FieldEntityModel',
           {
             equipment:[GBG.EquipmentArcs.shields.buclet,GBG.EquipmentArcs.weapons.shortSword],
-            movements:[GBG.Movements.front.body05,GBG.Movements.front.body15,GBG.Movements.front.run3,GBG.Movements.front.run4]                                                 
+            movements:[ GBG.XwingMovements.front.green1,
+                        GBG.XwingMovements.front.green2,
+                        GBG.XwingMovements.front.green3,
+                        GBG.XwingMovements.front.green4,
+                        GBG.XwingMovements.front.green5,
+                        GBG.XwingMovements.left.green1,
+                        GBG.XwingMovements.left.green2,
+                        GBG.XwingMovements.left.green3,
+                        GBG.XwingMovements.right.green1,
+                        GBG.XwingMovements.right.green2,
+                        GBG.XwingMovements.right.green3, 
+                        GBG.XwingMovements.bancoLeft.green1,
+                        GBG.XwingMovements.bancoLeft.green2,
+                        GBG.XwingMovements.bancoLeft.green3,
+                        GBG.XwingMovements.bancoRight.green1,
+                        GBG.XwingMovements.bancoRight.green2,
+                        GBG.XwingMovements.bancoRight.green3,]                                                 
         });
         
         lonelyGladiator.insertViewInto($("#Characters"));
         lonelyGladiator.refreshEquipment();
-        lonelyGladiator.forcePosition({position:{x:400,y:400},rotation:0})
+        
+        lonelyGladiator.loadDisplacement();
+        lonelyGladiator.forcePosition({position:{x:1050,y:1050},rotation:0});
         new TimelineMax()
       //  .staggerFrom($(".tileDiv"), 1, { rotationY:-90,autoAlpha:0,  transformOrigin:"50% 50% ", ease:Sine.easeOut},0.002)
     //    .staggerFrom($(".charDiv"), 1, { scale:0,  transformOrigin:"50% 50% ", ease:Elastic.easeOut},0.030)
    
        .to($("#grillVertical"), 1.6, { rotationX:60,  transformOrigin:"50% 60% ", ease:Bounce.easeOut})
-        .to($("#grillHorizontal"), 1.6, { rotationZ:-40,  transformOrigin:"50% 50%", ease:Sine.easeOut})
+       // .to($("#grillHorizontal"), 1.6, { rotationZ:-40,  transformOrigin:"50% 50%", ease:Sine.easeOut})
         
         ;
     
