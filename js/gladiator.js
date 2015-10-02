@@ -6,10 +6,69 @@ if (typeof Object.create !== 'function'){
   };
 }
 
+
+
 Math.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };
 
+/*
+Event structure
+
+name
+
+*/
+
+Object.defineProperty(Object.prototype, 'getId',{
+  value :function(){
+    if (this.objectId === undefined){
+    return 'ID_NOT_SETTED';
+  }
+  return this.objectId;
+  }
+});
+
+
+Object.defineProperty(Object.prototype, 'initEventHandler',{
+  value :function(scope,eventName){
+    if (scope.eventListeners === undefined){
+      scope.eventListeners = {};
+      scope.eventListeners[eventName] = {};
+    }
+    else if ( scope.eventListeners[eventName] === undefined ){
+      scope.eventListeners[eventName] = {};
+    }
+  }
+});
+
+Object.defineProperty(Object.prototype, 'fire',{
+  value :function(scope,eventName,params){
+     scope.initEventHandler(scope,eventName);
+  
+    for (var trigger in scope.eventListeners[eventName]) {
+      scope[trigger](params);
+    }
+  }
+});
+
+Object.defineProperty(Object.prototype, 'setTrigger',{
+  value :function(scope,eventName,functionName){
+      scope.initEventHandler(scope,eventName);
+    if (scope.eventListeners[eventName][functionName] !== undefined){
+      console.warn('the trigger in the object "'+ scope.getId() +'" for the event "'+eventName+'" to trigger the function "'+ functionName+'" is already setted, consider remove the redundance');
+    }
+    scope.eventListeners[eventName][functionName] = {functionName:functionName};
+  }
+});
+
+Object.defineProperty(Object.prototype, 'removeTrigger',{
+  value :function(scope,eventName,functionName){
+    scope.initEventHandler(scope,eventName);
+  
+    scope.eventListeners[eventName][functionName] = undefined;
+  }
+});
+console.log(Object.prototype);
 var GBG = {autor:'Ignacio Medina Castillo, Raising Spirit', github:'https://github.com/Raising', version:0.1, projectName:'Gladiator Board Game'};
 
 
@@ -388,6 +447,7 @@ GBG.Displacement = function( params ){
         me.movementOptions.push(newMovement);
         newMovement.attachViewTo(me.container);
         newMovement.setViewPosition();
+        newMovement.setViewEventHandlers();
       }
     },
     attachTo : function(element){
@@ -420,7 +480,7 @@ GBG.Movement = function( params ){
        me.view.setLocation({rotation:me.relativeRotation,position:me.relativePosition});
      },
      setViewEventHandlers : function(){
-       me.view.setOnClick(me.onClick);
+       me.view.setOnClick(me, 'onClick');
      }
   };
   
@@ -447,8 +507,11 @@ GBG.MovementView = function( params ){
     show : function(){
       TweenMax.to(me.container,0.3,{ opacity:0.4,transformOrigin:"50% 50%", ease:Sine.easeOut});
     },
-    setOnClick : function(callback){
-      me.container.onClick(callback());
+    setOnClick : function(scope,functionName){
+      me.setTrigger(scope,'click', functionName);
+      me.container.click(function(){
+        me.fire(scope,'click');
+      });
     }
   };  
   
