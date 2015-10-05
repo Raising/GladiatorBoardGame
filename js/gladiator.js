@@ -68,10 +68,8 @@ Object.defineProperty(Object.prototype, 'removeTrigger',{
     scope.eventListeners[eventName][functionName] = undefined;
   }
 });
-console.log(Object.prototype);
+
 var GBG = {autor:'Ignacio Medina Castillo, Raising Spirit', github:'https://github.com/Raising', version:0.1, projectName:'Gladiator Board Game'};
-
-
 
 //Constants
 GBG.GLADIATOR_RAIDUS = 50;
@@ -81,6 +79,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
 //Static members
 GBG.ID_COUNTER = 0;
 GBG.CREATED_OBJECTS = {};
+GBG.DOM_TO_OBJECT_MAP = {};
 //AuxiliarFunctions
 GBG.getNewId = function(){
   GBG.ID_COUNTER ++;
@@ -94,10 +93,17 @@ GBG.create = function(objectName, params){
   var newObject = new GBG[objectName](params);
   newObject.objectType = objectName;
   newObject.objectId = id + '_' + objectName ;
-  GBG.CREATED_OBJECTS[newObject.objectId] = newObject;
+  //GBG.CREATED_OBJECTS[newObject.objectId] = newObject;
   return newObject;
 };
 
+GBG.buildDomElement = function( scope ,definingString){
+  var newDomElement = $(definingString);
+  newDomElement.attr("id",scope.objectId);
+  GBG.DOM_TO_OBJECT_MAP[scope.objectId] = scope;
+ 
+  return newDomElement;
+};
 
 
 
@@ -111,7 +117,9 @@ GBG.FieldEntityModel = function( params ){
   this.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.create('StatusHandler') );
   this.localization  = (params.localization   ? params.localization  :  GBG.create('Localization')  );
   this.displacement  = (params.displacement   ? params.displacement  :  GBG.create('Displacement')  );
-  this.view          = (params.view           ? params.view          :  GBG.create('FieldEntityView'));
+  this.view          = (params.view           ? params.view          :  GBG.create('FieldEntityView',{model:me}));
+  this.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('EventHandler')  );
+  
  
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
@@ -142,6 +150,9 @@ GBG.FieldEntityModel = function( params ){
       me.displacement.loadMovements(me.movements);
       me.displacement.attachTo(me.view.getView());
     },
+    eventCatch : function(eventName, eventTarget) {
+      me.eventHandler.propagateEvent(me,eventName,eventTarget);
+    }
   };
   
   return newObject; 
@@ -153,10 +164,13 @@ GBG.FieldEntityModel = function( params ){
 GBG.FieldEntityView = function( params ){
   params = params ? params : {};
   var me = this;
-  this.mainContainer = $('<div class="XwingMainContainer"></div>');
+  this.model = params.model;
+  this.mainContainer =  GBG.buildDomElement(me,'<div class="XwingMainContainer"></div>');
   this.arcHandler =  GBG.create('ArcHandler',params);
-  
-
+    
+  $(this.mainContainer).click(function(event) {
+    me.model.eventCatch('click',event.target);
+  });
   this.mainContainer.append(me.arcHandler.getArcGraphics());
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
@@ -180,24 +194,49 @@ GBG.FieldEntityView = function( params ){
       
       
       
+      
   };
   
   return newObject; 
 };
+
+
+GBG.EventHandler = function(params){
+  params = params ? params : {};
+  var me = this;
+  
+  
+  
+  var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  //Metodos Publicos
+     
+      propagateEvent : function(scope,eventName,eventTarget){
+        console.log(eventTarget);
+        console.log(eventTarget.id);
+      }
+      
+      
+      
+  };
+  
+  return newObject; 
+};
+
+
 
 GBG.ArcHandler = function( params ){
   params = params ? params : {};
   var me = this;
   this.actionArcs = [];
   this.id = 'archandler';
-  this.graphic = $('<svg width="100px" height="100px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"></svg>');
+  this.graphic =  GBG.buildDomElement(me,'<svg width="100px" height="100px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"></svg>');
 
   $(this.graphic).addClass('gladiadorSVG'); 
  
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
     addActionArc : function(params){
-       var newActionArc =  GBG.create('ActionArc',params);
+       var newActionArc =  GBG.create('ActionArcModel',params);
        me.graphic[0].appendChild(newActionArc.getGraphic());
        me.actionArcs.push(newActionArc);
        newActionArc.setActionArc();
@@ -212,7 +251,7 @@ GBG.ArcHandler = function( params ){
 
 
 
-GBG.ActionArc = function( params ){
+GBG.ActionArcModel = function( params ){
   params = params ? params : {};
   var me = this;
   this.deepLevel = params.deepLevel ? params.deepLevel : 1; //deepLevel es la distancia desde el borde al centro pongamos un maximo de 6 niveles ppor ejemplo la idea es que no se superpongan dibujos.
@@ -241,6 +280,7 @@ GBG.ActionArc = function( params ){
       var i;
       for (i = me.widthLevels.length-1; i>=0 ; i--){
         me.widthLevels[i].deepLevel = me.deepLevel;
+        me.widthLevels[i].model = me;
         me.addArcStep(me.widthLevels[i]);      
       }
     },
@@ -253,6 +293,7 @@ GBG.ActionArc = function( params ){
 GBG.ActionArcView = function(params){
   params = params ? params : {};
   var me = this;
+  this.model = params.model;
   this.radius = params.deepLevel ? (GBG.GLADIATOR_RAIDUS - ((params.deepLevel-1) * GBG.ARC_DEEP_DISTANCE)-GBG.GLADIATOR_ARC_params).toString() :  GBG.GLADIATOR_RAIDUS.toString()-GBG.GLADIATOR_ARC_params;
   this.widthFrom = params.from ?  params.from + '%' :  '50%';
   this.widthTo = params.to ?  params.to + '%' :  '50%';
@@ -421,8 +462,9 @@ GBG.StatusHandler = function( params ){
 GBG.Displacement = function( params ){
   params = params ? params : {};
   var me = this;
+  this.parent = params.parent;
   //this.movementPositbilities = params ? params : [];
-  this.container = $('<div class="displacementContainer"></div>');
+  this.container =  GBG.buildDomElement(me,'<div class="displacementContainer"></div>');
   this.movementOptions = [];
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
@@ -465,7 +507,8 @@ GBG.Movement = function( params ){
   this.relativeRotation = params.rotation ? params.rotation : 0;
   this.relativePosition = params.position ? params.position : {x:0,y:100};
   this.template = params.template ? params.template : {};
-  this.view = GBG.create('MovementView');
+  this.view = GBG.create('MovementView',{model:me});
+  
   
   this.onClick = function(){
     console.log('elementclicked');
@@ -488,10 +531,13 @@ GBG.Movement = function( params ){
 };
 
 GBG.MovementView = function( params ){
+  
   params = params ? params : {};
+  
   var me = this;
  
-  this.container = $('<div class="movementView"></div>');
+  this.model = params.model;
+  this.container =  GBG.buildDomElement(me,'<div class="movementView"></div>');
   
   var newObject = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
@@ -499,7 +545,9 @@ GBG.MovementView = function( params ){
       $(element).append(me.container);
     },
     setLocation : function(params){
-      TweenMax.to(me.container,0.3,{ x:params.position.x,y:params.position.y,rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      TweenMax.to(me.container,0.3,{ x:       params.position.x,
+                                     y:       params.position.y,
+                                     rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
     },
     hide : function(){
       TweenMax.to(me.container,0.3,{ opacity:0,transformOrigin:"50% 50%", ease:Sine.easeOut});
