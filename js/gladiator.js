@@ -114,7 +114,7 @@ GBG.buildDomElement = function( scope ,definingString){ // toda linea que llame 
 
 
 
-GBG.FieldEntityModel = function( params ){
+GBG.FieldEntityController = function( params ){
   params = params ? params : {};
   var me = this;
   
