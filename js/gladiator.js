@@ -114,6 +114,63 @@ GBG.buildDomElement = function( scope ,definingString){ // toda linea que llame 
 
 
 
+
+RFW.Describe('FieldEntityModel',{
+
+  privateInit: function(scope,params){
+      scope.equipment     = (params.equipment      ? params.equipment     :  []                          );
+      scope.movements     = (params.movements      ? params.movements     :  []                          );
+      scope.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.create('StatusHandler') );
+      scope.localization  = (params.localization   ? params.localization  :  GBG.create('Localization')  );
+      scope.displacement  = (params.displacement   ? params.displacement  :  GBG.create('Displacement')  );
+      scope.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('FieldEntityEventHandler')  );
+      //View, should be declared after the public interface.
+      scope.view = GBG.create('FieldEntityView',{model: scope.publicInterface});
+  },
+  publicInterface: function(scope,params){
+      return {
+         insertViewInto : function(element){
+          $(element).append(scope.view.getView());
+        },
+        relativeMovement : function(params){
+          scope.localization.modifyPositionRelatedToOrientation(params.position);
+          scope.localization.modifyRotation(params.rotation);
+          scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
+        },
+        forcePosition : function(params){
+           scope.localization.setPosition(params.position);
+           scope.localization.setRotation(params.rotation);
+           scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
+        },
+        absoluteMovement : function(params){},
+        getEquipment : function(){
+          return scope.equipment;
+        },
+        refreshEquipment : function(){
+          var numEquipment = scope.equipment.length;
+          for (var i = 0 ; i<numEquipment; i++ ){
+            scope.view.addActionArc(scope.equipment[i]);
+          }
+        },
+        loadDisplacement : function() {
+          scope.displacement.loadMovements(scope.movements);
+          scope.displacement.attachTo(scope.view.getView());
+        },
+        onClick : function(eventName,eventTarget) {
+          //eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,me.publicInterface);  
+          scope.eventHandler.propagateEvent(scope.publicInterface,eventName,eventTarget);
+        },
+        onHoverIn : function(){
+          console.log('hoverin');
+
+        },
+        onHoverOut : function(){
+         console.log('hoverout');
+        }
+      };
+  }
+
+});
 GBG.FieldEntityModel = function( params ){
   params = params ? params : {};
   var me = this;
@@ -147,8 +204,16 @@ GBG.FieldEntityModel = function( params ){
       me.displacement.loadMovements(me.movements);
       me.displacement.attachTo(me.view.getView());
     },
-    eventCatch : function(eventName, eventTarget) {
+    onClick : function(eventName,eventTarget) {
+      //eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,me.publicInterface);  
       me.eventHandler.propagateEvent(me.publicInterface,eventName,eventTarget);
+    },
+    onHoverIn : function(){
+      console.log('hoverin');
+
+    },
+    onHoverOut : function(){
+     console.log('hoverout');
     }
   };
   
@@ -158,8 +223,8 @@ GBG.FieldEntityModel = function( params ){
   this.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.create('StatusHandler') );
   this.localization  = (params.localization   ? params.localization  :  GBG.create('Localization')  );
   this.displacement  = (params.displacement   ? params.displacement  :  GBG.create('Displacement')  );
-  this.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('EventHandler')  );
-  //View, should be declared after the publick interface.
+  this.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('FieldEntityEventHandler')  );
+  //View, should be declared after the public interface.
   this.view = GBG.create('FieldEntityView',{model: this.publicInterface});
   return this.publicInterface; 
 };
@@ -173,12 +238,12 @@ GBG.FieldEntityView = function( params ){
   
   this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos
-       init : function(){ // Funccion necesaria para retrasar la creación de los elementos visuales hasta que el modelo está completo (con su ID asignado)
+      init : function(){ // Funccion necesaria para retrasar la creación de los elementos visuales hasta que el modelo está completo (con su ID asignado)
         me.mainContainer =  GBG.buildDomElement(me.publicInterface,'<div class="XwingMainContainer"></div>');
         me.mainContainer.append(me.arcHandler.getArcGraphics());
         
         $(me.mainContainer).click(function(event) {
-           me.model.eventCatch('click',event.target);
+           me.model.onClick('click',event.target);
         });
       },
       getView: function(){
@@ -202,14 +267,16 @@ GBG.FieldEntityView = function( params ){
 };
 
 
-GBG.EventHandler = function(params){
+GBG.FieldEntityEventHandler = function(params){
   params = params ? params : {};
   var me = this;
   
   this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos
       propagateEvent : function(scope,eventName,eventTarget){
-        eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,scope);
+      
+          eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,scope);  
+        
         console.log(eventTarget);
         console.log(eventTarget.id);
       }
