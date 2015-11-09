@@ -114,6 +114,7 @@ GBG.buildDomElement = function( scope ,definingString){ // toda linea que llame 
 
 
 
+<<<<<<< HEAD
 
 RFW.Describe('FieldEntityModel',{
 
@@ -172,6 +173,9 @@ RFW.Describe('FieldEntityModel',{
 
 });
 GBG.FieldEntityModel = function( params ){
+=======
+GBG.FieldEntityController = function( params ){
+>>>>>>> origin/master
   params = params ? params : {};
   var me = this;
   

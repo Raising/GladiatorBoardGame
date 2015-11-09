@@ -39,7 +39,11 @@
       //  var bbMap = new BB.Grill(15,15);
     //    bbMap.createTileMatrix();
 
+<<<<<<< HEAD
         var lonelyGladiator = RFW.create('FieldEntityModel',
+=======
+        var XwingTest = GBG.create('FieldEntityController',
+>>>>>>> origin/master
           {
             equipment:[GBG.EquipmentArcs.shields.buclet,GBG.EquipmentArcs.weapons.shortSword],
             movements:[ GBG.XwingMovements.front.green1,
@@ -61,11 +65,11 @@
                         GBG.XwingMovements.bancoRight.green3,]                                                 
         });
         
-        lonelyGladiator.insertViewInto($("#Characters"));
-        lonelyGladiator.refreshEquipment();
+        XwingTest.insertViewInto($("#Characters"));
+        XwingTest.refreshEquipment();
         
-        lonelyGladiator.loadDisplacement();
-        lonelyGladiator.forcePosition({position:{x:1050,y:1950},rotation:0});
+        XwingTest.loadDisplacement();
+        XwingTest.forcePosition({position:{x:1050,y:1950},rotation:0});
         new TimelineMax()
       //  .staggerFrom($(".tileDiv"), 1, { rotationY:-90,autoAlpha:0,  transformOrigin:"50% 50% ", ease:Sine.easeOut},0.002)
     //    .staggerFrom($(".charDiv"), 1, { scale:0,  transformOrigin:"50% 50% ", ease:Elastic.easeOut},0.030)
