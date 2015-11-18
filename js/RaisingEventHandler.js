@@ -65,7 +65,7 @@ Object.defineProperty(Object.prototype, 'removeTrigger',{
 
 
 
-
+////////////////////////////////
 
 
 Object.defineProperty(Object.prototype, 'readyEventHandler',{
@@ -90,16 +90,14 @@ Object.defineProperty(Object.prototype, 'listenEvent',{
     listenedObject.readyEventHandler(eventName,functionName);
     
     listenerSpot = listenedObject.eventListeners[eventName][functionName];
-    if (listenerSpot !== undefined ){
-      if (listenerSpot[scope.getId()] !== undefined){
-         console.warn('the trigger in the object "'+ listenedObject.getId() +
-         '" for the event "'+eventName+
-         '" to trigger the function "'+ functionName+
-         '" of the object "'+ scope.getId() +
-         '" is already setted, consider remove the redundance');
-      }
-      listenerSpot[scope.getId()] = scope;
+    if (listenerSpot[scope.getId()] !== undefined){
+       console.warn('the trigger in the object "'+ listenedObject.getId() +
+       '" for the event "'+eventName+
+       '" to trigger the function "'+ functionName+
+       '" of the object "'+ scope.getId() +
+       '" is already setted, consider remove the redundance');
     }
+    listenerSpot[scope.getId()] = scope;
   }
 });
 
@@ -111,16 +109,14 @@ Object.defineProperty(Object.prototype, 'unListenEvent',{
     listenedObject.readyEventHandler(eventName,functionName);
     
     listenerSpot = listenedObject.eventListeners[eventName][functionName];
-    if (listenerSpot !== undefined ){
-      if (listenerSpot[scope.getId()] !== undefined){
-         console.warn('the trigger in the object "'+ listenedObject.getId() +
-         '" for the event "'+eventName+
-         '" to trigger the function "'+ functionName+
-         '" of the object "'+ scope.getId() +
-         '" is already setted, consider remove the redundance');
-      }
-      listenerSpot[scope.getId()] = scope;
+    if (listenerSpot[scope.getId()] === undefined){
+       console.warn('the trigger in the object "'+ listenedObject.getId() +
+       '" for the event "'+eventName+
+       '" to trigger the function "'+ functionName+
+       '" of the object "'+ scope.getId() +
+       '" wasen`t setted you may be missing something');
     }
+    listenerSpot[scope.getId()] = undefined;
   }
 });
 
