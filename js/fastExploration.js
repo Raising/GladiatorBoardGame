@@ -33,8 +33,21 @@ BB.Tile = function(type){
 		tile.x = x;
 		tile.y = y;
 
+		TweenMax.to(tile.htmlDiv,0,{x:tile.xPixelPosition(x)+"px",y:tile.yPixelPosition(y,x%2)+"px",z:z ,force3D:true });
+	};
+	
+	this.xPixelPosition = function(index){
+	  var offsetX = 100,
+	      lateralPartialTileWidth = 45;
+	  
+	  return index * lateralPartialTileWidth + offsetX;
+	};
 
-		TweenMax.to(tile.htmlDiv,0,{x:100+(x*45)+"px",y:100+((y*50)+((x%2)*25))+"px",z:z ,force3D:true });
+  this.yPixelPosition = function(index,parity){
+	  var offsetY = 100,
+	      tileHeigth = 50;
+	  
+	  return index * tileHeigth + offsetY + parity * tileHeigth/2;
 	};
 
 	this.getTile = function(){
@@ -56,8 +69,6 @@ BB.Tile = function(type){
 	this.getCharacter = function(){
 		return tile.characterHere;
 	};
-
-
 };
 
 

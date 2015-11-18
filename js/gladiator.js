@@ -19,55 +19,7 @@ name
 
 */
 
-Object.defineProperty(Object.prototype, 'getId',{
-  value :function(){
-    if (this.objectId === undefined){
-    return 'ID_NOT_SETTED';
-  }
-  return this.objectId;
-  }
-});
 
-
-Object.defineProperty(Object.prototype, 'initEventHandler',{
-  value :function(scope,eventName){
-    if (scope.eventListeners === undefined){
-      scope.eventListeners = {};
-      scope.eventListeners[eventName] = {};
-    }
-    else if ( scope.eventListeners[eventName] === undefined ){
-      scope.eventListeners[eventName] = {};
-    }
-  }
-});
-
-Object.defineProperty(Object.prototype, 'fire',{
-  value :function(scope,eventName,params){
-     scope.initEventHandler(scope,eventName);
-  
-    for (var trigger in scope.eventListeners[eventName]) {
-      scope[trigger](params);
-    }
-  }
-});
-
-Object.defineProperty(Object.prototype, 'setTrigger',{
-  value :function(scope,eventName,functionName){
-      scope.initEventHandler(scope,eventName);
-    if (scope.eventListeners[eventName][functionName] !== undefined){
-      console.warn('the trigger in the object "'+ scope.getId() +'" for the event "'+eventName+'" to trigger the function "'+ functionName+'" is already setted, consider remove the redundance');
-    }
-    scope.eventListeners[eventName][functionName] = {functionName:functionName};
-  }
-});
-
-Object.defineProperty(Object.prototype, 'removeTrigger',{
-  value :function(scope,eventName,functionName){
-    scope.initEventHandler(scope,eventName);
-  
-    scope.eventListeners[eventName][functionName] = undefined;
-  }
-});
 
 var GBG = {autor:'Ignacio Medina Castillo, Raising Spirit', github:'https://github.com/Raising', version:0.1, projectName:'Gladiator Board Game'};
 
@@ -90,7 +42,7 @@ GBG.getNewId = function(){
 };
 
 GBG.create = function(objectName, params){
-  var id = GBG.getNewId();
+  var id = this.getId();
   var newObject = new GBG[objectName](params);
   newObject.objectType = objectName;
   newObject.objectId = id + '_' + objectName ;
