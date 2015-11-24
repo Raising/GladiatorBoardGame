@@ -34,7 +34,7 @@ GBG.CREATED_OBJECTS = {};
 GBG.DOM_TO_OBJECT_MAP = {};
 //AuxiliarFunctions
 GBG.getNewId = function(){
-  GBG.ID_COUNTER ++;
+  GBG.ID_COUNTER += 1;
   var str = "" + GBG.ID_COUNTER;
   var pad = "000000";
   str = pad.substring(0, pad.length - str.length) + str;
@@ -42,10 +42,10 @@ GBG.getNewId = function(){
 };
 
 GBG.create = function(objectName, params){
-  var id = this.getId();
   var newObject = new GBG[objectName](params);
+      
   newObject.objectType = objectName;
-  newObject.objectId = id + '_' + objectName ;
+  newObject.objectId = newObject.ΦId() + '_' + objectName ;
   
   if (newObject.init){
     newObject.init();
@@ -57,545 +57,403 @@ GBG.create = function(objectName, params){
 GBG.buildDomElement = function( scope ,definingString){ // toda linea que llame a este metodo al generarse el elemento es necesario añadirlo al metodo INIT
   var newDomElement = $(definingString);
   newDomElement.attr("id",scope.objectId);
-  GBG.DOM_TO_OBJECT_MAP[scope.objectId] = scope;
- 
+  if (scope.getModel){
+    GBG.DOM_TO_OBJECT_MAP[scope.objectId] = scope.getModel();
+  }
+  else{
+    GBG.DOM_TO_OBJECT_MAP[scope.objectId] = scope;
+  }
+  
   return newDomElement;
 };
 
+GBG.getObjectFromDomElement = function(DOMElement){
+  return GBG.DOM_TO_OBJECT_MAP[DOMElement.id];
+};
 
-RFW.Describe('FieldEntityModel',{
+
+ò_ó.Describe('FieldEntityModel',{
 
   privateInit: function(scope,params){
       scope.equipment     = (params.equipment      ? params.equipment     :  []                          );
       scope.movements     = (params.movements      ? params.movements     :  []                          );
-      scope.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.create('StatusHandler') );
-      scope.localization  = (params.localization   ? params.localization  :  GBG.create('Localization')  );
-      scope.displacement  = (params.displacement   ? params.displacement  :  GBG.create('Displacement')  );
-      scope.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('FieldEntityEventHandler')  );
+      scope.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.create('StatusHandler') );
+      scope.localization  = (params.localization   ? params.localization  :  ò_ó.create('Localization')  );
+      scope.displacement  = (params.displacement   ? params.displacement  :  ò_ó.create('Displacement')  );
+      //scope.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('FieldEntityEventHandler')  );
       //View, should be declared after the public interface.
-      scope.view = GBG.create('FieldEntityView',{model: scope.publicInterface});
+      scope.view = ò_ó.create('FieldEntityView',{model: scope.publicInterface});
   },
+  
   publicInterface: function(scope,params){
-      return {
-         insertViewInto : function(element){
-          $(element).append(scope.view.getView());
-        },
-        relativeMovement : function(params){
-          scope.localization.modifyPositionRelatedToOrientation(params.position);
-          scope.localization.modifyRotation(params.rotation);
-          scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
-        },
-        forcePosition : function(params){
-           scope.localization.setPosition(params.position);
-           scope.localization.setRotation(params.rotation);
-           scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
-        },
-        absoluteMovement : function(params){},
-        getEquipment : function(){
-          return scope.equipment;
-        },
-        refreshEquipment : function(){
-          var numEquipment = scope.equipment.length;
-          for (var i = 0 ; i<numEquipment; i++ ){
-            scope.view.addActionArc(scope.equipment[i]);
-          }
-        },
-        loadDisplacement : function() {
-          scope.displacement.loadMovements(scope.movements);
-          scope.displacement.attachTo(scope.view.getView());
-        },
-        onClick : function(eventName,eventTarget) {
-          //eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,me.publicInterface);  
-          scope.eventHandler.propagateEvent(scope.publicInterface,eventName,eventTarget);
-        },
-        onHoverIn : function(){
-          console.log('hoverin');
-
-        },
-        onHoverOut : function(){
-         console.log('hoverout');
+    return {
+       insertViewInto : function(element){
+        $(element).append(scope.view.getView());
+      },
+      relativeMovement : function(params){
+        scope.localization.modifyPositionRelatedToOrientation(params.position);
+        scope.localization.modifyRotation(params.rotation);
+        scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
+      },
+      forcePosition : function(params){
+         scope.localization.setPosition(params.position);
+         scope.localization.setRotation(params.rotation);
+         scope.view.moveTo({position:scope.localization.getPosition(),rotation:scope.localization.getRotation()});
+      },
+      absoluteMovement : function(params){},
+      getEquipment : function(){
+        return scope.equipment;
+      },
+      refreshEquipment : function(){
+        var numEquipment = scope.equipment.length;
+        for (var i = 0 ; i<numEquipment; i++ ){
+          scope.view.addActionArc(scope.equipment[i]);
         }
-      };
+      },
+      loadDisplacement : function() {
+        scope.displacement.loadMovements(scope.movements);
+        scope.displacement.attachTo(scope.view.getView());
+      },
+      onClick : function(event) {
+        var objectClicked = GBG.getObjectFromDomElement(event.target);
+        
+        if (objectClicked.objectType === 'FieldEntityModel'){ // the object is itself
+          scope.displacement.toggleVisibility(); // shall we open a menu instead of only togle movements optiones visibilitiy
+        }
+        else{
+          objectClicked.onClick(scope.publicInterface);  
+        }
+      },
+      onHoverIn : function(){
+        console.log('hoverin');
+      },
+      onHoverOut : function(){
+       console.log('hoverout');
+      }
+    };
   }
-
 });
 
-GBG.FieldEntityController = function( params ){
-  params = params ? params : {};
-  var me = this;
+ò_ó.Describe('FieldEntityView',{
   
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    insertViewInto : function(element){
-      $(element).append(me.view.getView());
-    },
-    relativeMovement : function(params){
-      me.localization.modifyPositionRelatedToOrientation(params.position);
-      me.localization.modifyRotation(params.rotation);
-      me.view.moveTo({position:me.localization.getPosition(),rotation:me.localization.getRotation()});
-    },
-    forcePosition : function(params){
-       me.localization.setPosition(params.position);
-       me.localization.setRotation(params.rotation);
-       me.view.moveTo({position:me.localization.getPosition(),rotation:me.localization.getRotation()});
-    },
-    absoluteMovement : function(params){},
-    getEquipment : function(){
-      return me.equipment;
-    },
-    refreshEquipment : function(){
-      var numEquipment = me.equipment.length;
-      for (var i = 0 ; i<numEquipment; i++ ){
-        me.view.addActionArc(me.equipment[i]);
-      }
-    },
-    loadDisplacement : function() {
-      me.displacement.loadMovements(me.movements);
-      me.displacement.attachTo(me.view.getView());
-    },
-    onClick : function(eventName,eventTarget) {
-      //eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,me.publicInterface);  
-      me.eventHandler.propagateEvent(me.publicInterface,eventName,eventTarget);
-    },
-    onHoverIn : function(){
-      console.log('hoverin');
-
-    },
-    onHoverOut : function(){
-     console.log('hoverout');
-    }
-  };
+  privateInit: function(scope,params){
+    scope.model = params.model;
+    scope.arcHandler =  ò_ó.create('ArcHandler',params);
+    scope.mainContainer =  GBG.buildDomElement(scope.publicInterface,'<div class="XwingMainContainer"></div>');
+    scope.mainContainer.append(scope.arcHandler.getArcGraphics());
+    
+    $(scope.mainContainer).click(function(event) {
+       scope.model.onClick(event);
+    });
+  },
   
-  
-  this.equipment     = (params.equipment      ? params.equipment     :  []                          );
-  this.movements     = (params.movements      ? params.movements     :  []                          );
-  this.statusHandler = (params.statusHandler  ? params.statusHandler :  GBG.create('StatusHandler') );
-  this.localization  = (params.localization   ? params.localization  :  GBG.create('Localization')  );
-  this.displacement  = (params.displacement   ? params.displacement  :  GBG.create('Displacement')  );
-  this.eventHandler  = (params.eventHandler   ? params.eventHandler  :  GBG.create('FieldEntityEventHandler')  );
-  //View, should be declared after the public interface.
-  this.view = GBG.create('FieldEntityView',{model: this.publicInterface});
-  return this.publicInterface; 
-};
-
-
-
-
-GBG.FieldEntityView = function( params ){
-  params = params ? params : {};
-  var me = this;
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos
-      init : function(){ // Funccion necesaria para retrasar la creación de los elementos visuales hasta que el modelo está completo (con su ID asignado)
-        me.mainContainer =  GBG.buildDomElement(me.publicInterface,'<div class="XwingMainContainer"></div>');
-        me.mainContainer.append(me.arcHandler.getArcGraphics());
-        
-        $(me.mainContainer).click(function(event) {
-           me.model.onClick('click',event.target);
-        });
-      },
+    return {
       getView: function(){
-        return me.mainContainer;
+        return scope.mainContainer;
       },
       moveTo:function(localization){
         var tl = new TimelineMax();
-        tl.to(me.mainContainer,  0.5, { x:localization.position.x,y:localization.position.y,rotation:localization.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      //  tl.to(me.mainContainer,  0.3, { ,transformOrigin:"50% 50%"});
+        tl.to(scope.mainContainer,  0.5, { x:localization.position.x,y:localization.position.y,rotation:localization.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      //  tl.to(scope.mainContainer,  0.3, { ,transformOrigin:"50% 50%"});
       },
       addActionArc : function(params){
-        me.arcHandler.addActionArc(params);
+        scope.arcHandler.addActionArc(params);
       },
-     
-  };
-  
-  this.model = params.model;
-  this.arcHandler =  GBG.create('ArcHandler',params);
-
-  return this.publicInterface; 
-};
-
-
-GBG.FieldEntityEventHandler = function(params){
-  params = params ? params : {};
-  var me = this;
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos
-      propagateEvent : function(scope,eventName,eventTarget){
-      
-          eventTarget.fire(GBG.DOM_TO_OBJECT_MAP[eventTarget.id].getModel(),eventName,scope);  
-        
-        console.log(eventTarget);
-        console.log(eventTarget.id);
+      getModel: function(){
+        return scope.model;
       }
-  };
+    };
+  }
+});
+
+ò_ó.Describe('ArcHandler',{
   
-  return this.publicInterface; 
-};
-
-
-
-GBG.ArcHandler = function( params ){
-  params = params ? params : {};
-  var me = this;
+  privateInit: function(scope,params){
+    scope.actionArcs = [];
+    scope.graphic =  GBG.buildDomElement(scope.publicInterface,'<svg class="arcHandlerContainer" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"></svg>');
+  },
   
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos
-    init: function(){
-       me.graphic =  GBG.buildDomElement(me.publicInterface,'<svg width="100px" height="100px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"></svg>');
-      $(me.graphic).addClass('gladiadorSVG'); 
-    },
-    addActionArc : function(params){
-       var newActionArc =  GBG.create('ActionArcModel',params);
-       me.graphic[0].appendChild(newActionArc.getGraphic());
-       me.actionArcs.push(newActionArc);
-       newActionArc.setActionArc();
-    },
-    getArcGraphics: function(){
-      return me.graphic;
-    },
-  };
-  
-  this.actionArcs = [];
-
-  return this.publicInterface; 
-};
-
-
-
-GBG.ActionArcModel = function( params ){
-  params = params ? params : {};
-  var me = this;
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    getGraphic: function(){
-      return me.graphic;
-    },
-    setActionArc: function(){
-      var i;
-      for (i = me.widthLevels.length-1; i>=0 ; i--){
-        me.widthLevels[i].deepLevel = me.deepLevel;
-        me.widthLevels[i].model = me.publicInterface;
-        me.addArcStep(me.widthLevels[i]);      
+    return {
+      addActionArc : function(params){
+         var newActionArc =  ò_ó.create('ActionArcModel',params);
+         scope.graphic[0].appendChild(newActionArc.getGraphic());
+         scope.actionArcs.push(newActionArc);
+         newActionArc.setActionArc();
+      },
+      getArcGraphics: function(){
+        return scope.graphic;
       }
-    },
-  };
-  
-  this.deepLevel = params.deepLevel ? params.deepLevel : 1; //deepLevel es la distancia desde el borde al centro pongamos un maximo de 6 niveles ppor ejemplo la idea es que no se superpongan dibujos.
-  this.widthLevels = params.widthLevels ? params.widthLevels : GBG.EquipmentArcs.shields.buclet;
-  this.orientation = params.orientation ? 90 + params.orientation : 90;
-  // me.graphic = $('<rect x="150" y="100" class="box" width="50" height="50"/>');
-  this.arcSteps = [];
-  this.graphic = document.createElementNS("http://www.w3.org/2000/svg", 'g'); //Create a SVG container
-
-  this.addArcStep = function(params){
-    var newArcStep =   GBG.create('ActionArcView',params);
-    me.arcSteps.push(newArcStep);
-    me.graphic.appendChild(newArcStep.getArcStep());
-  };
-  TweenMax.to(me.graphic, 1, {rotation:me.orientation,transformOrigin:"50% 50%"});
-  
-  return this.publicInterface; 
-};
+    };
+  } 
+});
 
 
-GBG.ActionArcView = function(params){
-  params = params ? params : {};
-  var me = this;
-  this.model = params.model;
-  this.radius = params.deepLevel ? (GBG.GLADIATOR_RAIDUS - ((params.deepLevel-1) * GBG.ARC_DEEP_DISTANCE)-GBG.GLADIATOR_ARC_params).toString() :  GBG.GLADIATOR_RAIDUS.toString()-GBG.GLADIATOR_ARC_params;
-  this.widthFrom = params.from ?  params.from + '%' :  '50%';
-  this.widthTo = params.to ?  params.to + '%' :  '50%';
-  this.color = params.color ?  params.color : '#49a';
-  this.graphic = document.createElementNS("http://www.w3.org/2000/svg", 'circle'); //Create a path in SVG's namespace
-  this.graphic.setAttribute("x","0"); 
-  this.graphic.setAttribute("y","0");
-  this.graphic.setAttribute("fill","none") ;
-  this.graphic.setAttribute("r",this.radius); 
-  this.graphic.setAttribute("cx","50"); 
-  this.graphic.setAttribute("cy","50");
+ò_ó.Describe('ActionArcModel',{
   
-  this.graphic.style.stroke = me.color; //Set stroke colour
-  this.graphic.style.strokeWidth = "5px"; //Set stroke width
-  TweenMax.to(me.graphic, 4, {drawSVG:me.widthFrom+' '+me.widthTo,delay:4,ease:Elastic.easeOut});
- 
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  privateInit: function(scope,params){
+    scope.deepLevel = params.deepLevel ? params.deepLevel : 1; //deepLevel es la distancia desde el borde al centro pongamos un maximo de 6 niveles ppor ejemplo la idea es que no se superpongan dibujos.
+    scope.widthLevels = params.widthLevels ? params.widthLevels : GBG.EquipmentArcs.shields.buclet;
+    scope.orientation = params.orientation ? 90 + params.orientation : 90;
+    // scope.graphic = $('<rect x="150" y="100" class="box" width="50" height="50"/>');
+    scope.arcSteps = [];
+    scope.graphic = document.createElementNS("http://www.w3.org/2000/svg", 'g'); //Create a SVG container
+  
+    scope.addArcStep = function(params){
+      var newArcStep =   ò_ó.create('ActionArcView',params);
+      scope.arcSteps.push(newArcStep);
+      scope.graphic.appendChild(newArcStep.getArcStep());
+    };
+    
+    TweenMax.to(scope.graphic, 1, {rotation:scope.orientation,transformOrigin:"50% 50%"}); 
+  },
+  
+  publicInterface : function(scope,params) {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
   //Metodos Publicos  
-    getArcStep: function(){
-      return me.graphic;
-    },
-  };
+    return {
+      getGraphic: function(){
+        return scope.graphic;
+      },
+      setActionArc: function(){
+        var i;
+        for (i = scope.widthLevels.length-1; i>=0 ; i--){
+          scope.widthLevels[i].deepLevel = scope.deepLevel;
+          scope.widthLevels[i].model = scope.publicInterface;
+          scope.addArcStep(scope.widthLevels[i]);      
+        }
+      },
+    };
+  }
+});
+
+ò_ó.Describe('ActionArcView' ,{
   
-  return this.publicInterface; 
-};
-
-
-
-
-GBG.Localization = function( params ){
-  params = params ? params : {};
-  var me = this;
+  privateInit: function(scope,params){
+    scope.model = params.model;
+    scope.radius = params.deepLevel ? (GBG.GLADIATOR_RAIDUS - ((params.deepLevel-1) * GBG.ARC_DEEP_DISTANCE)-GBG.GLADIATOR_ARC_params).toString() :  GBG.GLADIATOR_RAIDUS.toString()-GBG.GLADIATOR_ARC_params;
+    scope.widthFrom = params.from ?  params.from + '%' :  '50%';
+    scope.widthTo = params.to ?  params.to + '%' :  '50%';
+    scope.color = params.color ?  params.color : '#49a';
+    scope.graphic = document.createElementNS("http://www.w3.org/2000/svg", 'circle'); //Create a path in SVG's nascopespace
+    scope.graphic.setAttribute("x","0"); 
+    scope.graphic.setAttribute("y","0");
+    scope.graphic.setAttribute("fill","none") ;
+    scope.graphic.setAttribute("r",scope.radius); 
+    scope.graphic.setAttribute("cx","50"); 
+    scope.graphic.setAttribute("cy","50");
+    
+    scope.graphic.style.stroke = scope.color; //Set stroke colour
+    scope.graphic.style.strokeWidth = "5px"; //Set stroke width
+    TweenMax.to(scope.graphic, 4, {drawSVG:scope.widthFrom+' '+scope.widthTo,delay:4,ease:Elastic.easeOut});
+  },
   
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos
+  publicInterface : function(scope,params) {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
+      getArcStep: function(){
+        return scope.graphic;
+      }
+    };
+  }
+});
+
+
+ò_ó.Describe('Localization', {
+  
+  privateInit: function(scope,params){
+    scope.position = params.position ? params.position : {x: 200, y : 300};
+    scope.rotation = params.rotation ? params.rotation : 0;
+    
+    scope.calculateStraightMovementCoeficient = function(){
+      return {coefX:Math.sin(Math.radians(scope.rotation)),coefY:(-1) * Math.cos(Math.radians(scope.rotation))};
+    };
+    scope.calculateSideMovementCoeficient = function(){
+      return {coefX:Math.cos(Math.radians(scope.rotation)),coefY:(1) * Math.sin(Math.radians(scope.rotation))};
+    };
+    scope.modifyPosition = function(params){
+      if(params.x !== undefined && params.y !== undefined){
+        scope.position.x += params.x;
+        scope.position.y += params.y;
+      }
+      else{
+        console.error('GBG.Localization.setPosition called with the wrong parameters, expested object with x and y values',params);
+      }
+    };
+  },
+  
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
       setPosition: function(params){
-        if(params.x !== undefined && params.y !== undefined){
-          me.position.x = params.x;
-          me.position.y = params.y;
-        }
-        else{
-          console.error('GBG.Localization.setPosition called with the wrong parameters, expested object with x and y values',params);
-        }
+          scope.position.x = params.x;
+          scope.position.y = params.y;
       },
       setX : function(x){
-        if(x !== undefined ){
-          me.position.x = x;
-        }
-        else{
-          console.error('GBG.Localization.setX called with the wrong parameters',x);
-        }
+          scope.position.x = x;
       },
       setY : function(y){
-        if(y !== undefined ){
-          me.position.y = y;
-        }
-        else{
-          console.error('GBG.Localization.setX called with the wrong parameters',y);
-        }
+          scope.position.y = y;
       },
       setRotation : function(rotation){
-         if(rotation !== undefined ){
-          me.rotation = rotation;
-        }
-        else{
-          console.error('GBG.Localization.setrotation called with the wrong parameters',rotation);
-        }
+          scope.rotation = rotation;
       },
       modifyX : function(x){
-        if(x !== undefined ){
-          me.position.x += x;
-        }
-        else{
-          console.error('GBG.Localization.setX called with the wrong parameters',x);
-        }
+          scope.position.x += x;
       },
       modifyY : function(y){
-        if(y !== undefined ){
-          me.position.y += y;
-        }
-        else{
-          console.error('GBG.Localization.modifyY called with the wrong parameters',y);
-        }
+          scope.position.y += y;
       },
       modifyRotation : function(rotation){
-        if(rotation !== undefined ){
-          me.rotation += rotation;
-        }
-        else{
-          console.error('GBG.Localization.modifyRotation called with the wrong parameters',rotation);
-        }
+          scope.rotation += rotation;
       },
       getPosition: function(){
-        return me.position;
+        return scope.position;
       },
       getRotation: function(){
-        return me.rotation;
+        return scope.rotation;
       },
       modifyPositionRelatedToOrientation: function(params){ //Straight, side
-        var straightCoeficients = me.calculateStraightMovementCoeficient();
-        var sideCoeficients = me.calculateSideMovementCoeficient();
-        me.modifyPosition({x:straightCoeficients.coefX * params.straight + sideCoeficients.coefX * params.side,
+        var straightCoeficients = scope.calculateStraightMovementCoeficient();
+        var sideCoeficients = scope.calculateSideMovementCoeficient();
+        
+        scope.modifyPosition({x:straightCoeficients.coefX * params.straight + sideCoeficients.coefX * params.side,
                         y:straightCoeficients.coefY * params.straight + sideCoeficients.coefY * params.side});
       },
       getPositionRelatedToOrientation: function(params){ //Straight, side
-        var straightCoeficients = me.calculateStraightMovementCoeficient();
-        var sideCoeficients = me.calculateSideMovementCoeficient();
+        var straightCoeficients = scope.calculateStraightMovementCoeficient();
+        var sideCoeficients = scope.calculateSideMovementCoeficient();
+        
         return({x:straightCoeficients.coefX * params.straight + sideCoeficients.coefX * params.side,
                         y:straightCoeficients.coefY * params.straight + sideCoeficients.coefY * params.side});
       },
+    };
+  }
+});
+
+
+ò_ó.Describe('Wound' ,{
+  privateInit: function(scope,params){
     
-  };
-  
-  this.position = params.position ? params.position : {x: 200, y : 300};
-  this.rotation = params.rotation ? params.rotation : 0;
-  
-  this.calculateStraightMovementCoeficient = function(){
-    return {coefX:Math.sin(Math.radians(me.rotation)),coefY:(-1) * Math.cos(Math.radians(me.rotation))};
-  };
-  this.calculateSideMovementCoeficient = function(){
-    return {coefX:Math.cos(Math.radians(me.rotation)),coefY:(1) * Math.sin(Math.radians(me.rotation))};
-  };
-  this.modifyPosition = function(params){
-    if(params.x !== undefined && params.y !== undefined){
-      me.position.x += params.x;
-      me.position.y += params.y;
-    }
-    else{
-      console.error('GBG.Localization.setPosition called with the wrong parameters, expested object with x and y values',params);
-    }
-  };
-
-  return this.publicInterface; 
-};
-
-
-GBG.Wound = function( params ){
-  
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    
-  };
-  
-  return this.publicInterface; 
-};
-
-GBG.StatusHandler = function( params ){
-  params = params ? params : {};
-  var me = this;
-  //metodos y variables prvadas
-
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    
-  };
-  
-  this.stamina = params.stamina ? params.stamina : 6;
-  this.health = params.health ? params.health : 6;
-  this.wounds = [];
-  
-  return this.publicInterface;
-};
-
-
-
-GBG.Displacement = function( params ){
-  params = params ? params : {};
-  var me = this;
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    init: function(){
-      me.container =  GBG.buildDomElement(me.publicInterface,'<div class="displacementContainer"></div>');
-    },
-    
-    refreshEquipment : function(){
-      var numEquipment = me.equipment.length;
-      for (var i = 0 ; i<numEquipment; i++ ){
-        me.view.addActionArc(me.equipment[i]);
-      }
-    },
-    
-    addMovement : function(params){
-      var newMovement = GBG.create('Movement',params);
+  },
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
       
-    },
-    loadMovements : function(movements){
-      me.container.empty();
-      me.movementOptions = [];
-      var numberOfMovements = movements.length;
-      for (var i = 0;i <numberOfMovements; i++){
-        var newMovement = GBG.create('Movement',movements[i]);
-        me.movementOptions.push(newMovement);
-        newMovement.attachViewTo(me.container);
-        newMovement.setViewPosition();
-        newMovement.setViewEventHandlers();
-      }
-    },
-    attachTo : function(element){
-      $(element).append(me.container);
-    }
-  };
-  
-  
-  this.parent = params.parent;
-  //this.movementPositbilities = params ? params : [];
-  
-  this.movementOptions = [];
-  
-  return this.publicInterface; 
-};
+    };
+  }
+});
 
-
-GBG.Movement = function( params ){
-  params = params ? params : {};
-  var me = this;
- 
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
+ò_ó.Describe('StatusHandler' ,{
+  privateInit: function(scope,params){
+    scope.stamina = params.stamina ? params.stamina : 6;
+    scope.health = params.health ? params.health : 6;
+    scope.wounds = [];
+  },
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
       
-     attachViewTo : function(element){
-       me.view.attachViewTo(element);
-     }, 
-     setViewPosition : function(){
-       me.view.setLocation({rotation:me.relativeRotation,position:me.relativePosition});
-     },
-     setViewEventHandlers : function(){
-       me.view.setOnClick(me.publicInterface, 'onClick');
-     },
-     onClick : function(params){
-        params.relativeMovement(me.publicInterface.getLocation());
-        console.log('elementclicked', params);
-     },
-     getLocation :function(){
-       return {position: {straight:(-1) * me.relativePosition.y,side:me.relativePosition.x}, rotation:me.relativeRotation};
-     },
-  };
-  
-  this.relativeRotation = params.rotation ? params.rotation : 0;
-  this.relativePosition = params.position ? params.position : {x:0,y:100};
-  this.template = params.template ? params.template : {};
-  this.view = GBG.create('MovementView',{model:me.publicInterface});
-  
-  return this.publicInterface; 
-};
+    };
+  }
+});
 
-GBG.MovementView = function( params ){
-  
-  params = params ? params : {};
-  
-  var me = this;
- 
-  this.model = params.model;
-  
-  
-  this.publicInterface = {// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-  //Metodos Publicos  
-    init : function(){
-      me.container =  GBG.buildDomElement(me.publicInterface,'<div class="movementView"></div>');
-    },
-    attachViewTo : function (element){
-      $(element).append(me.container);
-    },
-    setLocation : function(params){
-      TweenMax.to(me.container,0.3,{ x:       params.position.x,
-                                     y:       params.position.y,
-                                     rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
-    },
-    hide : function(){
-      TweenMax.to(me.container,0.3,{ opacity:0,transformOrigin:"50% 50%", ease:Sine.easeOut});
-    },
-    show : function(){
-      TweenMax.to(me.container,0.3,{ opacity:0.4,transformOrigin:"50% 50%", ease:Sine.easeOut});
-    },
-    setOnClick : function(scope,functionName){
-      me.setTrigger(scope,'click', functionName);
-    },
-    getModel : function(){
-      return me.model;
-    }
-  };  
-  
-  return this.publicInterface; 
-};
+ò_ó.Describe('Displacement' ,{
+  privateInit: function(scope,params){
+     scope.parent = params.parent;
+     scope.movementOptions = [];
+     scope.visible = true;
+     scope.container =  GBG.buildDomElement(scope.publicInterface,'<div class="displacementContainer"></div>');
+  },
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
+      loadMovements : function(movements){
+        var numberOfMovements = movements.length;
+        scope.container.empty();
+        scope.movementOptions = [];
+        
+        for (var i = 0;i <numberOfMovements; i++){
+          var newMovement = ò_ó.create('Movement',movements[i]);
+          scope.movementOptions.push(newMovement);
+          newMovement.attachViewTo(scope.container);
+          newMovement.setViewPosition();
+        }
+      },
+      attachTo : function(element){
+        $(element).append(scope.container);
+      },
+      setVisibility: function(visibility){
+          if (visibility){
+            $(scope.container).css({display:"initial"});
+          }else{
+            $(scope.container).css({display:"none"});
+          }
+          scope.visible = visibility;
+      },
+      toggleVisibility: function(){
+          if (!scope.visible){
+            $(scope.container).css({display:"initial"});
+          }else{
+            $(scope.container).css({display:"none"});
+          }
+          scope.visible = !scope.visible;
+      }
+    };
+  }
+});
 
-GBG.Wound = function( params ){
-  
-};
+ò_ó.Describe('Movement' ,{
+  privateInit: function(scope,params){
+    scope.relativeRotation = params.rotation ? params.rotation : 0;
+    scope.relativePosition = params.position ? params.position : {x:0,y:100};
+    scope.template = params.template ? params.template : {};
+    scope.view = ò_ó.create('MovementView',{model:scope.publicInterface});
+  },
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
+      attachViewTo : function(element){
+        scope.view.attachViewTo(element);
+      }, 
+      setViewPosition : function(){
+        scope.view.setLocation({rotation:scope.relativeRotation,position:scope.relativePosition});
+      },
+      onClick : function(params){
+        params.relativeMovement(scope.publicInterface.getLocation());
+      },
+      getLocation :function(){
+        return {position: {straight:(-1) * scope.relativePosition.y,side:scope.relativePosition.x}, rotation:scope.relativeRotation};
+      },
+    };
+  }
+});
+
+ò_ó.Describe('MovementView' ,{
+  privateInit: function(scope,params){
+    scope.model = params.model;
+    scope.container =  GBG.buildDomElement(scope.publicInterface,'<div class="movementView"></div>');
+    
+  },
+  publicInterface : function(scope,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+    return {
+      attachViewTo : function (element){
+      $(element).append(scope.container);
+      },
+      setLocation : function(params){
+        TweenMax.to(scope.container,0.3,{ x:       params.position.x,
+                                       y:       params.position.y,
+                                       rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      },
+      hide : function(){
+        TweenMax.to(scope.container,0.3,{ opacity:0,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      },
+      show : function(){
+        TweenMax.to(scope.container,0.3,{ opacity:0.4,transformOrigin:"50% 50%", ease:Sine.easeOut});
+      },
+      getModel : function(){
+        return scope.model;
+      }
+    };
+  }
+});
+
 
 /*
  var svg = document.getElementsByTagName('svg')[0]; //Get svg element

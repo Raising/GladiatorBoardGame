@@ -10,10 +10,10 @@ REH = {
 
 Object.ID_COUNTER = 0;
 
-Object.defineProperty(Object.prototype, 'getId',{
+Object.defineProperty(Object.prototype, 'ΦId',{
   value :function(){
     if (this.id === undefined){
-      Object.ID_COUNTER++;
+      Object.ID_COUNTER ++;
       var str = "" + Object.ID_COUNTER;
       var pad = "000000";
       this.id = pad.substring(0, pad.length - str.length) + str;
@@ -49,7 +49,7 @@ Object.defineProperty(Object.prototype, 'setTrigger',{
   value :function(scope,eventName,functionName){
       scope.initEventHandler(scope,eventName);
     if (scope.eventListeners[eventName][functionName] !== undefined){
-      console.warn('the trigger in the object "'+ scope.getId() +'" for the event "'+eventName+'" to trigger the function "'+ functionName+'" is already setted, consider remove the redundance');
+      console.warn('the trigger in the object "'+ scope.ΦId() +'" for the event "'+eventName+'" to trigger the function "'+ functionName+'" is already setted, consider remove the redundance');
     }
     scope.eventListeners[eventName][functionName] = {functionName:functionName};
   }
@@ -68,7 +68,7 @@ Object.defineProperty(Object.prototype, 'removeTrigger',{
 ////////////////////////////////
 
 
-Object.defineProperty(Object.prototype, 'readyEventHandler',{
+Object.defineProperty(Object.prototype, 'ΦreadyEventHandler',{
   value :function(eventName, functionName){
     if (this.eventListeners === undefined){
       this.eventListeners = {};
@@ -79,57 +79,52 @@ Object.defineProperty(Object.prototype, 'readyEventHandler',{
     if (functionName && this.eventListeners[eventName][functionName] === undefined ){
       this.eventListeners[eventName][functionName] = {};
     }
+    return this.eventListeners;
   }
 });
 
-Object.defineProperty(Object.prototype, 'listenEvent',{
+Object.defineProperty(Object.prototype, 'ΦlistenEvent',{
   value :function(listenedObject,eventName,functionName,scope){
     var listenerSpot;
     scope = scope ? scope : this;
     
-    listenedObject.readyEventHandler(eventName,functionName);
-    
-    listenerSpot = listenedObject.eventListeners[eventName][functionName];
-    if (listenerSpot[scope.getId()] !== undefined){
-       console.warn('the trigger in the object "'+ listenedObject.getId() +
+    listenerSpot = listenedObject.ΦreadyEventHandler(eventName,functionName)[eventName][functionName];
+    if (listenerSpot[scope.ΦId()] !== undefined){
+       console.warn('the trigger in the object "'+ listenedObject.ΦId() +
        '" for the event "'+eventName+
        '" to trigger the function "'+ functionName+
-       '" of the object "'+ scope.getId() +
+       '" of the object "'+ scope.ΦId() +
        '" is already setted, consider remove the redundance');
     }
-    listenerSpot[scope.getId()] = scope;
+    listenerSpot[scope.ΦId()] = scope;
   }
 });
 
-Object.defineProperty(Object.prototype, 'unListenEvent',{
+Object.defineProperty(Object.prototype, 'ΦunListenEvent',{
   value :function(listenedObject,eventName,functionName,scope){
     var listenerSpot;
     scope = scope ? scope : this;
     
-    listenedObject.readyEventHandler(eventName,functionName);
-    
-    listenerSpot = listenedObject.eventListeners[eventName][functionName];
-    if (listenerSpot[scope.getId()] === undefined){
-       console.warn('the trigger in the object "'+ listenedObject.getId() +
+    listenerSpot = listenedObject.ΦreadyEventHandler(eventName,functionName)[eventName][functionName];
+    if (listenerSpot[scope.ΦId()] === undefined){
+       console.warn('the trigger in the object "'+ listenedObject.ΦId() +
        '" for the event "'+eventName+
        '" to trigger the function "'+ functionName+
-       '" of the object "'+ scope.getId() +
+       '" of the object "'+ scope.ΦId() +
        '" wasen`t setted you may be missing something');
     }
-    listenerSpot[scope.getId()] = undefined;
+    delete listenerSpot[scope.ΦId()];
   }
 });
 
-Object.defineProperty(Object.prototype, 'fireEvent',{
+Object.defineProperty(Object.prototype, 'ΦfireEvent',{
   value :function(eventName,params){
     var listOfObjectsListening,
         listOfFunctionsListening,
         objectId,
         functionName;
-        
-    this.readyEventHandler(eventName);
   
-    listOfFunctionsListening = this.eventListeners[eventName];
+    listOfFunctionsListening = this.ΦreadyEventHandler(eventName)[eventName];
     
     for (functionName in listOfFunctionsListening){
       listOfObjectsListening = listOfFunctionsListening[functionName];
@@ -138,5 +133,23 @@ Object.defineProperty(Object.prototype, 'fireEvent',{
         listOfObjectsListening[objectId][functionName](params);
       }
     }
+  }
+});
+
+
+//////HTML enchantment
+
+Object.defineProperty(HTMLElement.prototype, 'getAbsolutePosition',{
+ value: function getPosition() {
+    var xPosition = 0,
+        yPosition = 0,
+        element = this;
+  
+    while(element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+    return { x: xPosition, y: yPosition };
   }
 });

@@ -111,6 +111,7 @@
   left:0;
   width: 100px;
   height: 100px;
+  pointer-events:none;
 }
 
 .movementView{
@@ -122,9 +123,11 @@
   /*background: linear-gradient(to right, rgba(28,28,28,1) 0%, rgba(28,28,28,1) 37%, rgba(102,102,102,1) 49%, rgba(212,42,42,1) 50%, rgba(102,102,102,1) 51%, rgba(28,28,28,1) 65%, rgba(28,28,28,1) 100%);*/
   border: 2px solid black;
   opacity: 0.7;
+  pointer-events:auto;
 }
 
-.gladiadorSVG{
-	width: 100px;
+.arcHandlerContainer{
+  pointer-events:none;
+  width: 100px;
   height: 100px;
 }

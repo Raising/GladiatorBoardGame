@@ -25,7 +25,7 @@ RFW.Describe = function(className,classObject){
 		params = params ? params : {};
 		var me = this;
 		// variable privadas generales
-		this.objectId = RFW.getNewId() + '_' + className ;
+		this.objectId = this.ΦId() + '_' + className ;
 		this.objectType = className;
   		//
 
@@ -34,6 +34,8 @@ RFW.Describe = function(className,classObject){
 		this.publicInterface.getId = function(){
 			return me.objectId;
 		};
+		this.publicInterface.objectId = me.objectId;
+		
 		this.publicInterface.getObjectType = function(){
 			return me.objectType;
 		};
@@ -45,11 +47,9 @@ RFW.Describe = function(className,classObject){
 };
 
 RFW.create = function(className,params){
-
-	var id = RFW.getNewId();
 	var newObject = new RFW.ClassList[className](params);
 	newObject.objectType = className;
-	newObject.objectId = id + '_' + className ;
+	newObject.objectId = newObject.ΦId() + '_' + className ;
 	  
 	  if (newObject.init){
 	    newObject.init();
@@ -57,3 +57,5 @@ RFW.create = function(className,params){
 	  //RFW.CREATED_OBJECTS[newObject.objectId] = newObject;
 	  return newObject;
 };
+
+ò_ó = RFW;
