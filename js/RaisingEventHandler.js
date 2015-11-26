@@ -12,13 +12,13 @@ Object.ΦID_COUNTER = 0;
 
 Object.defineProperty(Object.prototype, 'ΦId',{
   value :function(){
-    if (this.belgthorId === undefined){
+    if (this.numericId === undefined){
       Object.ΦID_COUNTER ++;
       var str = "" + Object.ΦID_COUNTER;
       var pad = "000000";
-      this.belgthorId = pad.substring(0, pad.length - str.length) + str;
+      this.numericId = pad.substring(0, pad.length - str.length) + str;
     }
-    return this.belgthorId;
+    return this.numericId;
   }
 });
 

@@ -13,7 +13,9 @@
         <script type="text/javascript" src="../js/fastExploration.js"></script>
         <script type="text/javascript" src="../js/RaisingEventHandler.js"></script>
         <script type="text/javascript" src="../js/Ibero.js"></script>
-        <script type="text/javascript" src="../js/gladiator.js"></script>
+        <script type="text/javascript" src="../js/gladiator.js"></script>  
+        <script type="text/javascript" src="../js/ArcHandler.js"></script>
+       
         <script type="text/javascript" src="../js/configurable.js"></script>
 	<!--	<script type="text/javascript" src="AnimationRaisingModule.js"></script>
         <script type="text/javascript" src="functionality.js"></script>
@@ -42,7 +44,7 @@
     //    bbMap.createTileMatrix();
 
 
-        var XwingTest = ò_ó.create('FieldEntityModel',
+        var XwingTest = ò_ó.Create.Controller('FieldEntityController',
           {
             equipment:[GBG.EquipmentArcs.shields.buclet,GBG.EquipmentArcs.weapons.shortSword],
             movements:[ GBG.XwingMovements.front.green1,
