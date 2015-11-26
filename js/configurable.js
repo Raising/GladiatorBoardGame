@@ -29,14 +29,14 @@ GBG.EquipmentArcs = {
 
 GBG.Movements = {
   front:{
-     body05:  { position : {y:-50,x:0},rotation:0},
-     body1:   { position : {y:-100,x:0},rotation:0},
-     body15:  { position : {y:-150,x:0},rotation:0},
-     body2:   { position : {y:-200,x:0},rotation:0},
-     run3:    { position : {y:-300,x:0},rotation:0},
-     run4:    { position : {y:-400,x:0},rotation:0},
-     run5:    { position : {y:-500,x:0},rotation:0},
-     run6:    { position : {y:-600,x:0},rotation:0}
+     body05:  { coordinates : {y:-50,x:0},rotation:0},
+     body1:   { coordinates : {y:-100,x:0},rotation:0},
+     body15:  { coordinates : {y:-150,x:0},rotation:0},
+     body2:   { coordinates : {y:-200,x:0},rotation:0},
+     run3:    { coordinates : {y:-300,x:0},rotation:0},
+     run4:    { coordinates : {y:-400,x:0},rotation:0},
+     run5:    { coordinates : {y:-500,x:0},rotation:0},
+     run6:    { coordinates : {y:-600,x:0},rotation:0}
   },
   left:{},
   right:{},
@@ -65,31 +65,31 @@ banc Turn , defined by arc radius. 45 degrees
 */
 GBG.XwingMovements = {
   front:{
-     green1:  { position : {y:-200,x:0},rotation:0},
-     green2:  { position : {y:-300,x:0},rotation:0},
-     green3:  { position : {y:-400,x:0},rotation:0},
-     green4:  { position : {y:-500,x:0},rotation:0},
-     green5:  { position : {y:-600,x:0},rotation:0},
+     green1:  { coordinates : {y:-200,x:0},rotation:0},
+     green2:  { coordinates : {y:-300,x:0},rotation:0},
+     green3:  { coordinates : {y:-400,x:0},rotation:0},
+     green4:  { coordinates : {y:-500,x:0},rotation:0},
+     green5:  { coordinates : {y:-600,x:0},rotation:0},
       },
   left:{ 
-     green1:  { position : {y:-137.5,x:-137.5},rotation:-90},
-     green2:  { position : {y:-207.5,x:-207.5},rotation:-90},
-     green3:  { position : {y:-275,x:-275},rotation:-90},
+     green1:  { coordinates : {y:-137.5,x:-137.5},rotation:-90},
+     green2:  { coordinates : {y:-207.5,x:-207.5},rotation:-90},
+     green3:  { coordinates : {y:-275,x:-275},rotation:-90},
   },
   right:{
-     green1:  { position : {y:-137.5,x:137.5},rotation:90},
-     green2:  { position : {y:-207.5,x:207.5},rotation:90},
-     green3:  { position : {y:-275,x:275},rotation:90},
+     green1:  { coordinates : {y:-137.5,x:137.5},rotation:90},
+     green2:  { coordinates : {y:-207.5,x:207.5},rotation:90},
+     green3:  { coordinates : {y:-275,x:275},rotation:90},
   },
    bancoLeft:{
-     green1:  { position : {y:-225.5  ,x:-45    },rotation:-45},
-     green2:  { position : {y:-313    ,x:-82.5  },rotation:-45},
-     green3:  { position : {y:-400.5  ,x:-120   },rotation:-45},
+     green1:  { coordinates : {y:-225.5  ,x:-45    },rotation:-45},
+     green2:  { coordinates : {y:-313    ,x:-82.5  },rotation:-45},
+     green3:  { coordinates : {y:-400.5  ,x:-120   },rotation:-45},
   },
    bancoRight:{
-     green1:  { position : {y:-225.5  ,x:45     },rotation:45},
-     green2:  { position : {y:-313    ,x:82.5   },rotation:45},
-     green3:  { position : {y:-400.5  ,x:120    },rotation:45},
+     green1:  { coordinates : {y:-225.5  ,x:45     },rotation:45},
+     green2:  { coordinates : {y:-313    ,x:82.5   },rotation:45},
+     green3:  { coordinates : {y:-400.5  ,x:120    },rotation:45},
   },
   back:{},
   turn:{}

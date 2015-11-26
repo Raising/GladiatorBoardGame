@@ -52,14 +52,14 @@ GBG.ARC_DEEP_DISTANCE = 5;
         $(element).append(priv.view.getDomElement());
       },
       relativeMovement : function(params){
-        priv.localization.modifyPositionRelatedToOrientation(params.position);
+        priv.localization.modifyPositionRelatedToOrientation(params.coordinates);
         priv.localization.modifyRotation(params.rotation);
-        priv.view.moveTo({position:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+        priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
       },
       forcePosition : function(params){
-         priv.localization.setPosition(params.position);
+         priv.localization.setPosition(params.coordinates);
          priv.localization.setRotation(params.rotation);
-         priv.view.moveTo({position:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+         priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
       },
       absoluteMovement : function(params){},
       getEquipment : function(){
@@ -100,7 +100,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.Controller('Localization', {
   
   builder: function(priv,params){
-    priv.position = params.position ? params.position : {x: 200, y : 300};
+    priv.coordinates = params.coordinates ? params.coordinates : {x: 200, y : 300};
     priv.rotation = params.rotation ? params.rotation : 0;
     
     priv.calculateStraightMovementCoeficient = function(){
@@ -110,37 +110,37 @@ GBG.ARC_DEEP_DISTANCE = 5;
       return {coefX:Math.cos(Math.radians(priv.rotation)),coefY:(1) * Math.sin(Math.radians(priv.rotation))};
     };
     priv.modifyPosition = function(params){
-        priv.position.x += params.x;
-        priv.position.y += params.y;
+        priv.coordinates.x += params.x;
+        priv.coordinates.y += params.y;
     };
   },
   
   publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
     return {
       setPosition: function(params){
-          priv.position.x = params.x;
-          priv.position.y = params.y;
+          priv.coordinates.x = params.x;
+          priv.coordinates.y = params.y;
       },
       setX : function(x){
-          priv.position.x = x;
+          priv.coordinates.x = x;
       },
       setY : function(y){
-          priv.position.y = y;
+          priv.coordinates.y = y;
       },
       setRotation : function(rotation){
           priv.rotation = rotation;
       },
       modifyX : function(x){
-          priv.position.x += x;
+          priv.coordinates.x += x;
       },
       modifyY : function(y){
-          priv.position.y += y;
+          priv.coordinates.y += y;
       },
       modifyRotation : function(rotation){
           priv.rotation += rotation;
       },
       getPosition: function(){
-        return priv.position;
+        return priv.coordinates;
       },
       getRotation: function(){
         return priv.rotation;
@@ -217,14 +217,11 @@ GBG.ARC_DEEP_DISTANCE = 5;
 });
 
 
-
-
 ò_ó.Describe.Controller('MovementController' ,{
   builder: function(priv,params){
-    priv.relativeRotation = params.rotation ? params.rotation : 0;
-    priv.relativePosition = params.position ? params.position : {x:0,y:100};
-    priv.template = params.template ? params.template : {};
+     priv.situation =  ò_ó.Create.Model('Position2DModel',params);
   },
+  
   
   view:{
     name: 'MovementView'
@@ -236,14 +233,33 @@ GBG.ARC_DEEP_DISTANCE = 5;
         return priv.view;
       },
       setViewPosition : function(){
-        priv.view.setLocation({rotation:priv.relativeRotation,position:priv.relativePosition});
+        priv.view.setLocation(priv.situation.getPosition());
       },
-      onClick : function(params){
-        params.relativeMovement(priv.publ.getLocation());
+      onClick : function(ObjectToMove){
+        ObjectToMove.relativeMovement(priv.publ.getLocation());
       },
       getLocation :function(){
-        return {position: {straight:(-1) * priv.relativePosition.y,side:priv.relativePosition.x}, rotation:priv.relativeRotation};
+        return priv.situation.getPositionDisplacementFormat();
       },
+    };
+  }
+});
+
+ò_ó.Describe.Model('Position2DModel',{
+  builder: function(priv,params){
+    priv.coordinates = params.coordinates ? params.coordinates : {x:0,y:100};
+    priv.rotation = params.rotation ? params.rotation : 0;
+    priv.template = params.template ? params.template : {};
+  },
+  
+  publ : function(priv,params){
+    return {
+      getPositionDisplacementFormat: function(){
+        return {coordinates: {straight:(-1) * priv.coordinates.y,side:priv.coordinates.x}, rotation:priv.rotation};
+      },
+      getPosition: function(){
+        return {coordinates:priv.coordinates, rotation:priv.rotation};
+      }
     };
   }
 });
@@ -267,9 +283,9 @@ GBG.ARC_DEEP_DISTANCE = 5;
   
   publ : function(priv,params){
     return {
-      moveTo:function(localization){
+      moveTo:function(position){
         var tl = new TimelineMax();
-        tl.to(priv.mainDomElement,  0.5, { x:localization.position.x,y:localization.position.y,rotation:localization.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
+        tl.to(priv.mainDomElement,  0.5, { x:position.coordinates.x,y:position.coordinates.y,rotation:position.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
       },
       addActionArc : function(params){
         priv.arcHandler.addActionArc(params);
@@ -308,18 +324,17 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.View('MovementView' ,{
   builder: function(priv,params){
     priv.controller = params.controller;
-   // priv.mainDomElement =  ò_ó.buildDomElement(priv.publ,'<div class="movementView"></div>');
   },
   
   mainDomElement:{
     template: '<div class="movementView"></div>'
   },
   
-  publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+  publ : function(priv,params){
     return {
       setLocation : function(params){
-        TweenMax.to(priv.mainDomElement,0.3,{ x:       params.position.x,
-                                              y:       params.position.y,
+        TweenMax.to(priv.mainDomElement,0.3,{ x:       params.coordinates.x,
+                                              y:       params.coordinates.y,
                                               rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
       },
       hide : function(){
@@ -327,9 +342,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
       },
       show : function(){
         TweenMax.to(priv.mainDomElement,0.3,{ opacity:0.4,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      },
-      getController : function(){
-        return priv.controller;
       }
     };
   }
