@@ -31,14 +31,13 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.Controller('FieldEntityController',{
 
   builder: function(priv,params){
-      priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
-      priv.movements     = (params.movements      ? params.movements     :  []                          );
-      priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
-      priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
-      priv.displacement  = (params.displacement   ? params.displacement  :  ò_ó.Create.Controller('Displacement', {positionsArray:params.movements})); 
-   
-      priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
-      priv.view.addToDomElement(priv.displacement);
+    priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
+    priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
+    priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
+    priv.displacement  = (params.displacement   ? params.displacement  :  ò_ó.Create.Controller('Displacement', {positionsArray:params.movements})); 
+ 
+    priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
+    priv.view.addToDomElement(priv.displacement);
   },
   
   view: { name: 'FieldEntityView',
@@ -171,8 +170,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
     priv.visible = true;
     
     priv.publ.loadMovementOptions();
-     
-       
   },
   
   view:{

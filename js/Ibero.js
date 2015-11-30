@@ -12,14 +12,6 @@ IBERO.DOM_TO_OBJECT_MAP = {};
 
 IBERO.prototipeRepository = {};
 
-IBERO.getNewId = function(){
-  IBERO.ID_COUNTER += 1;
-  var str = "" + IBERO.ID_COUNTER;
-  var pad = "000000000";
-  str = pad.substring(0, pad.length - str.length) + str;
-  return str;
-};
-
 IBERO.buildDomElement = function( scope ,definingString){ // toda linea que llame a este metodo al generarse el elemento es necesario añadirlo al metodo INIT
   var newDomElement = $(definingString);
   newDomElement.attr("id",scope.getId());
@@ -99,19 +91,27 @@ IBERO.Describe.Interface = function(className,classObject){
 IBERO.Describe.Controller = function(className,classObject){
   if(!IBERO.Validate.Controller(className,classObject))return false;
 
-	IBERO.ControllerClassList[className] = function(params){
+	IBERO.ControllerClassList[className] = function(params,forcedPrivate){
 		params = params ? params : {};
-		var priv = this;
-		// variable privadas generales
-	  IBERO.InjectIdentifiers(priv,className);
-
-  	priv.publ  = classObject.publ(priv,params); 
-
+		var priv = forcedPrivate ? forcedPrivate : this,
+		    heritage;
+		
+	 
+    if (classObject.Extends !== undefined){
+      heritage = IBERO.InjectControllerHeritage(priv,classObject.Extends,params);
+      IBERO.InjectIdentifiers(priv,className);
+      priv.publ  = classObject.publ(priv,params);
+     Object.setPrototypeOf(priv.publ, heritage);
+    }
+    else{
+      IBERO.InjectIdentifiers(priv,className);
+  	  priv.publ  = classObject.publ(priv,params);
+    }
+  
 		IBERO.InjectGenericMethods(priv);
 		
-	  //IBERO.InjectModel(priv,classObject.view);
 		IBERO.InjectView(priv,classObject.view);
-  		//
+		
 		classObject.builder(priv,params);
 
 		return priv.publ;
@@ -129,8 +129,8 @@ IBERO.Describe.View = function(className,classObject){
 	  IBERO.InjectIdentifiers(priv,className);
 
   	priv.publ  = classObject.publ(priv,params); 
+
   	priv.controller  = params.controller; 
-  	
   		//metodos generales
 		IBERO.InjectGenericMethods(priv);
 		
@@ -220,7 +220,9 @@ IBERO.InjectGenericMethods = function(priv){
 		  };
 		}
 };
-
+IBERO.InjectControllerHeritage = function(priv,extendedClass,params){
+    return new IBERO.ControllerClassList[extendedClass](params,priv);
+};
 
 IBERO.InjectView = function(priv,params){
   if (params){
@@ -244,6 +246,8 @@ IBERO.InjectMainDomElement = function(priv,params){
       };
   	} 
 };
+
+
 
 IBERO.Validate = {
   Controller : function(className,classObject){
@@ -289,8 +293,10 @@ IBERO.Validate = {
 IBERO.hasAllRequiredMethods = function(className,classObject){
   var proxyPubl = classObject.publ({},{}); // necesita comprobar herencia
   
-  if (classObject.Extends !== undefined){
-      classObject.Extends.forEach(function(extendedClass){
+  
+  
+  if (classObject.Implements !== undefined){
+      classObject.Implements.forEach(function(extendedClass){
   	    var method,
   	        extendedObject = IBERO.InterfaceClassList[extendedClass]();
   	    
@@ -345,36 +351,51 @@ IBERO.hasOnlyFunctions = function(className,classObject){
 ò_ó = IBERO;
 
 
-/*
+
 ò_ó.Describe.Interface('dummyInterface',{
-  getEquipment:function(){},
-  dummyMethod:function(){}
+  sayNon:function(){},
+  sayHi:function(){}
 });
 
 
-
-ò_ó.Describe.Controller('dummyController',{
-  Extends:['dummyInterface'],
+ò_ó.Describe.Controller('inheritMe',{
 
   builder : function(priv,params){
-      priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
-      priv.movements     = (params.movements      ? params.movements     :  []                          );
-      //priv.eventHandler  = (params.eventHandler   ? params.eventHandler  :  ò_ó.create('FieldEntityEventHandler')  );
-      //View, should be declared after the public interface.
-      priv.view = ò_ó.create('FieldEntityView',{controller: priv.publ});
-      priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
+      priv.fruit     = (params.fruit      ? params.fruit     :  []                          );
   },
   
   publ: function(priv,params){
     return {
-      insertViewInto : function(element){
-        $(element).append(priv.view.getView());
+      sayHi : function(){
+        console.log('hellow inherited World');
       }
     };
   }
 });
-*/
 
+
+ò_ó.Describe.Controller('dummyController',{
+  Implements:['dummyInterface'],
+  Extends:'inheritMe',
+
+  builder : function(priv,params){
+      priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
+      priv.movements     = (params.movements      ? params.movements     :  []                          );
+  
+  },
+  
+  publ: function(priv,params){
+    return {
+      sayNon : function(){
+        console.log('NO  NO NO NO ');
+      }
+    };
+  }
+});
+
+
+nacho = ò_ó.Create.Controller('dummyController');
+console.log(nacho);
 
 
 

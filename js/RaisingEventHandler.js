@@ -15,7 +15,7 @@ Object.defineProperty(Object.prototype, 'ΦId',{
     if (this.numericId === undefined){
       Object.ΦID_COUNTER ++;
       var str = "" + Object.ΦID_COUNTER;
-      var pad = "000000";
+      var pad = "0000000000";
       this.numericId = pad.substring(0, pad.length - str.length) + str;
     }
     return this.numericId;
