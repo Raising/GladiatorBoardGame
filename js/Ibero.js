@@ -201,14 +201,6 @@ IBERO.Create.Model = function(className,params){
 
 
 
-
-
-
-
-
-
-
-
 IBERO.InjectIdentifiers = function(priv,className){
   priv.objectId = priv.ΦId() + '_' + className ;
 	priv.objectType = className;

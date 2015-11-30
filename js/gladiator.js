@@ -35,11 +35,10 @@ GBG.ARC_DEEP_DISTANCE = 5;
       priv.movements     = (params.movements      ? params.movements     :  []                          );
       priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
       priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
-      priv.displacement  = (params.displacement   ? params.displacement  :  ò_ó.Create.Controller('Displacement')  ); 
-      //priv.eventHandler  = (params.eventHandler   ? params.eventHandler  :  ò_ó.create('FieldEntityEventHandler')  );
-      //View, should be declared after the public interface.
-     // priv.view = ò_ó.Create.View('FieldEntityView',{controller: priv.publ});
+      priv.displacement  = (params.displacement   ? params.displacement  :  ò_ó.Create.Controller('Displacement', {positionsArray:params.movements})); 
+   
       priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
+      priv.view.addToDomElement(priv.displacement);
   },
   
   view: { name: 'FieldEntityView',
@@ -71,10 +70,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
           priv.view.addActionArc(priv.equipment[i]);
         }
       },
-      loadDisplacement : function() {
-        priv.displacement.loadMovements(priv.movements);
-        priv.view.addToDomElement(priv.displacement);
-      },
       onClick : function(event) {
         var objectClicked = ò_ó.getObjectFromDomElement(event.target);
         
@@ -90,6 +85,9 @@ GBG.ARC_DEEP_DISTANCE = 5;
       },
       onHoverOut : function(){
        console.log('hoverout');
+      },
+      setDisplacementVisibility: function(visibility){
+        priv.displacement.setVisibility(visibility);
       }
     };
   }
@@ -168,10 +166,13 @@ GBG.ARC_DEEP_DISTANCE = 5;
 
 ò_ó.Describe.Controller('Displacement' ,{
   builder: function(priv,params){
-     priv.parent = params.parent;
-     priv.movementOptions = [];
-     priv.visible = true;
-  //   priv.container =  ò_ó.buildDomElement(priv.publ,'<div class="displacementContainer"></div>');
+    priv.positionOptions = params.positionsArray ? params.positionsArray : [];
+    priv.movementOptions = [];
+    priv.visible = true;
+    
+    priv.publ.loadMovementOptions();
+     
+       
   },
   
   view:{
@@ -180,18 +181,20 @@ GBG.ARC_DEEP_DISTANCE = 5;
   
   publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
     return {
-      loadMovements : function(movements){
-        var numberOfMovements = movements.length;
-        priv.view.empty();
+      loadMovementOptions : function(){
+        var numberOfMovements = priv.positionOptions.length;
+        priv.view.cleanDomElement();
         priv.movementOptions = [];
         
         for (var i = 0;i <numberOfMovements; i++){
-          var newMovement = ò_ó.Create.Controller('MovementController',movements[i]);
+          var newMovement = ò_ó.Create.Controller('MovementController',priv.positionOptions[i]);
           priv.movementOptions.push(newMovement);
-          //newMovement.attachViewTo(priv.view.getDomElement());
           priv.view.addToDomElement(newMovement);
           newMovement.setViewPosition();
         }
+      },
+      setPositionOptions : function(positionsArray){
+         priv.positionOptions = positionsArray;
       },
       attachTo : function(element){
         $(element).append(priv.container);
@@ -222,7 +225,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
      priv.situation =  ò_ó.Create.Model('Position2DModel',params);
   },
   
-  
   view:{
     name: 'MovementView'
   },
@@ -235,8 +237,9 @@ GBG.ARC_DEEP_DISTANCE = 5;
       setViewPosition : function(){
         priv.view.setLocation(priv.situation.getPosition());
       },
-      onClick : function(ObjectToMove){
-        ObjectToMove.relativeMovement(priv.publ.getLocation());
+      onClick : function(parentEntity){
+        parentEntity.relativeMovement(priv.publ.getLocation());
+        parentEntity.setDisplacementVisibility(false);
       },
       getLocation :function(){
         return priv.situation.getPositionDisplacementFormat();
@@ -244,6 +247,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
     };
   }
 });
+
 
 ò_ó.Describe.Model('Position2DModel',{
   builder: function(priv,params){
@@ -297,7 +301,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.View('DisplacementView',{
   
   builder: function(priv,params){
-    priv.mainDomElement = ò_ó.buildDomElement(priv.publ,'<div class="displacementContainer"></div>');
   },
   
   mainDomElement:{
@@ -306,9 +309,6 @@ GBG.ARC_DEEP_DISTANCE = 5;
   
   publ : function(priv,params){
     return {
-      empty: function(){
-        priv.mainDomElement.empty();
-      },
       setVisibility: function(visibility){
           if (visibility){
             $(priv.mainDomElement).css({display:"initial"});
@@ -348,6 +348,22 @@ GBG.ARC_DEEP_DISTANCE = 5;
 });
 
 
+ò_ó.Describe.Model('Position2DArrayModel',{
+  builder: function(priv,params){
+     priv.movementOptions = params ? params : [];
+  },
+  
+  publ: function(priv,params){
+    return {
+      forEach: function(callBack){
+        var index;
+        for (index in priv.movementOptions){
+          callBack(priv.movementOptions[index]);
+        }
+      }
+    };
+  }
+});
 
 
 
