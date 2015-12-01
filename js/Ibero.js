@@ -1,9 +1,9 @@
 IBERO = {Author : 'Ignacio Medina Castillo'};
-IBERO.ClassList = {};
-IBERO.ControllerClassList = {};
-IBERO.InterfaceClassList = {};
-IBERO.ViewClassList = {};
-IBERO.ModelClassList = {};
+IBERO.classList = {};
+IBERO.classList.controller = {};
+IBERO.classList.interface = {};
+IBERO.classList.view = {};
+IBERO.classList.model = {};
 
 IBERO.ID_COUNTER = 0;
 IBERO.CREATED_OBJECTS = {};
@@ -33,12 +33,12 @@ IBERO.getObjectFromDomElement = function(DOMElement){
 
 
 IBERO.Describe = function(className,classObject){
-	if (typeof IBERO.ClassList[className] !== 'undefined'){
+	if (typeof IBERO.classList[className] !== 'undefined'){
 		console.error('you are trying to describe two time the same class');
 		return false;
 	}
 
-	IBERO.ClassList[className] = function(params){
+	IBERO.classList[className] = function(params){
 		params = params ? params : {};
 		var me = this;
 		// variable privadas generales
@@ -63,7 +63,7 @@ IBERO.Describe = function(className,classObject){
 };
 
 IBERO.Create = function(className,params){
-	var newObject = new IBERO.ClassList[className](params);
+	var newObject = new IBERO.classList[className](params);
 	newObject.objectType = className;
 	newObject.objectId = newObject.ΦId() + '_' + className ;
 	  
@@ -77,36 +77,28 @@ IBERO.Create = function(className,params){
 
 
 IBERO.Describe.Interface = function(className,classObject){
-  if (typeof IBERO.InterfaceClassList[className] !== 'undefined'){
-		console.error('you are trying to describe two time the same class');
-		return false;
-	}
+  var classType = 'interface';
+  
+  if(!IBERO.validateClass(className,classObject,classType))return false;
 	
-	IBERO.InterfaceClassList[className] = function(){
+	IBERO.classList.interface[className] = function(){
 	  return classObject;
 	};
+	
+	IBERO.classList[classType][className].DOC = classObject;
 };
 
 
 IBERO.Describe.Controller = function(className,classObject){
-  if(!IBERO.Validate.Controller(className,classObject))return false;
+  var classType = 'controller';
+  
+  if(!IBERO.validateClass(className,classObject,classType))return false;
 
-	IBERO.ControllerClassList[className] = function(params,forcedPrivate){
+	IBERO.classList[classType][className] = function(params,forcedPrivate){
 		params = params ? params : {};
-		var priv = forcedPrivate ? forcedPrivate : this,
-		    heritage;
+		var priv = forcedPrivate ? forcedPrivate : this;
 		
-	 
-    if (classObject.Extends !== undefined){
-      heritage = IBERO.InjectControllerHeritage(priv,classObject.Extends,params);
-      IBERO.InjectIdentifiers(priv,className);
-      priv.publ  = classObject.publ(priv,params);
-     Object.setPrototypeOf(priv.publ, heritage);
-    }
-    else{
-      IBERO.InjectIdentifiers(priv,className);
-  	  priv.publ  = classObject.publ(priv,params);
-    }
+	  IBERO.createPublic(priv,className,classObject,params,classType);
   
 		IBERO.InjectGenericMethods(priv);
 		
@@ -116,19 +108,21 @@ IBERO.Describe.Controller = function(className,classObject){
 
 		return priv.publ;
 	};
+	
+	IBERO.classList[classType][className].DOC = classObject;
 };
 
 
 IBERO.Describe.View = function(className,classObject){
-   if(!IBERO.Validate.View(className,classObject))return false;
+  var classType = 'view';
   
-  IBERO.ViewClassList[className] = function(params){
+  if(!IBERO.validateClass(className,classObject,classType))return false;
+  
+  IBERO.classList[classType][className] = function(params){
 		params = params ? params : {};
 		var priv = this;
 		// variable privadas generales
-	  IBERO.InjectIdentifiers(priv,className);
-
-  	priv.publ  = classObject.publ(priv,params); 
+	  IBERO.createPublic(priv,className,classObject,params,classType);
 
   	priv.controller  = params.controller; 
   		//metodos generales
@@ -141,18 +135,20 @@ IBERO.Describe.View = function(className,classObject){
 
 		return priv.publ;
 	};
+	
+	IBERO.classList[classType][className].DOC = classObject;
 };
 
 IBERO.Describe.Model = function(className,classObject){
-   if(!IBERO.Validate.Model(className,classObject))return false;
+   var classType = 'model';
+  
+  if(!IBERO.validateClass(className,classObject,classType))return false;
    
-   IBERO.ModelClassList[className] = function(params){
+   IBERO.classList[classType][className] = function(params){
 		params = params ? params : {};
 		var priv = this;
 		// variable privadas generales
-	  IBERO.InjectIdentifiers(priv,className);
-
-  	priv.publ  = classObject.publ(priv,params); 
+	  IBERO.createPublic(priv,className,classObject,params,classType);
   		//metodos generales
 		IBERO.InjectGenericMethods(priv);
   		//
@@ -160,12 +156,14 @@ IBERO.Describe.Model = function(className,classObject){
 
 		return priv.publ;
 	};
+	
+	IBERO.classList[classType][className].DOC = classObject;
 };
 
 
 
 IBERO.Create.Controller = function(className,params){
-	var newObject = new IBERO.ControllerClassList[className](params);
+	var newObject = new IBERO.classList.controller[className](params);
 
 	  if (newObject.init){
 	    newObject.init();
@@ -176,7 +174,7 @@ IBERO.Create.Controller = function(className,params){
 };
 
 IBERO.Create.View = function(className,params){
-	var newObject = new IBERO.ViewClassList[className](params);
+	var newObject = new IBERO.classList.view[className](params);
 
 	  if (newObject.init){
 	    newObject.init();
@@ -187,7 +185,7 @@ IBERO.Create.View = function(className,params){
 };
 
 IBERO.Create.Model = function(className,params){
-	var newObject = new IBERO.ModelClassList[className](params);
+	var newObject = new IBERO.classList.model[className](params);
 
 	  if (newObject.init){
 	    newObject.init();
@@ -199,7 +197,20 @@ IBERO.Create.Model = function(className,params){
 
 
 
-
+IBERO.createPublic = function(priv,className,classObject,params,classType){
+	  var heritage;
+	  
+    if (classObject.Extends !== undefined){
+      heritage = new IBERO.classList[classType][classObject.Extends](params,priv);
+      IBERO.InjectIdentifiers(priv,className);
+      priv.publ = classObject.publ(priv,params);
+      Object.setPrototypeOf(priv.publ, heritage);
+    }
+    else{
+      IBERO.InjectIdentifiers(priv,className);
+  	  priv.publ = classObject.publ(priv,params);
+    }
+};
 
 IBERO.InjectIdentifiers = function(priv,className){
   priv.objectId = priv.ΦId() + '_' + className ;
@@ -220,9 +231,8 @@ IBERO.InjectGenericMethods = function(priv){
 		  };
 		}
 };
-IBERO.InjectControllerHeritage = function(priv,extendedClass,params){
-    return new IBERO.ControllerClassList[extendedClass](params,priv);
-};
+
+
 
 IBERO.InjectView = function(priv,params){
   if (params){
@@ -249,56 +259,35 @@ IBERO.InjectMainDomElement = function(priv,params){
 
 
 
-IBERO.Validate = {
-  Controller : function(className,classObject){
-    if (typeof IBERO.ControllerClassList[className] !== 'undefined'){
+IBERO.validateClass = function (className,classObject,classType){
+   if (typeof IBERO.classList[classType][className] !== 'undefined'){
   		console.error('you are trying to describe twice the same class');
   		return false;
 	  }
 	  
-    return IBERO.hasAllRequiredMethods(className,classObject);
-  },
-  
-  View : function(className,classObject){
-    if (typeof IBERO.ViewClassList[className] !== 'undefined'){
-  		console.error('you are trying to describe twice the same class');
-  		return false;
-	  }
-	  
-    return IBERO.hasAllRequiredMethods(className,classObject);
-  },
-  
-  Model : function(className,classObject){
-    if (typeof IBERO.ModelClassList[className] !== 'undefined'){
-  		console.error('you are trying to describe twice the same class');
-  		return false;
-	  }
-	  
-    return IBERO.hasAllRequiredMethods(className,classObject);
-  },
-  
-  Interface : function(className,classObject){
-     if (typeof IBERO.InterfaceClassList[className] !== 'undefined'){
-  		console.error('you are trying to describe twice the same class');
-  		return false;
-	  }
-    
-    return IBERO.hasOnlyFunctions(className,classObject);
-  }
+    return IBERO.hasAllRequiredMethods(className,classObject,classType);
 };
 
-
-
-
-IBERO.hasAllRequiredMethods = function(className,classObject){
-  var proxyPubl = classObject.publ({},{}); // necesita comprobar herencia
+IBERO.hasAllRequiredMethods = function(className,classObject,classType){
+  var proxyPubl,
+      inheritedMethods,
+      method; 
   
+  if (classObject.Extends !== undefined){
+    proxyPubl = classObject.publ({},{});
+    inheritedMethods = IBERO.classList[classType][classObject.Extends].DOC.publ({},{});
+    for (method in inheritedMethods){
+       if (inheritedMethods.hasOwnProperty(method) && typeof inheritedMethods[method] === 'function'){
+  	        proxyPubl[method] = inheritedMethods[method];
+       }
+    }
+  }
   
   
   if (classObject.Implements !== undefined){
       classObject.Implements.forEach(function(extendedClass){
   	    var method,
-  	        extendedObject = IBERO.InterfaceClassList[extendedClass]();
+  	        extendedObject = IBERO.classList.interface[extendedClass]();
   	    
   	    for (method in extendedObject){
   	      if (extendedObject.hasOwnProperty(method) && typeof extendedObject[method] === 'function'){
@@ -313,7 +302,7 @@ IBERO.hasAllRequiredMethods = function(className,classObject){
   	}
   	
   	return true;
-};
+};  
 
 IBERO.hasOnlyFunctions = function(className,classObject){
     var method;
