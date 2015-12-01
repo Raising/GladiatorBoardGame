@@ -320,10 +320,58 @@ IBERO.hasOnlyFunctions = function(className,classObject){
 
 
 
-
-
-
-
+IBERO.publishDocumentation = function(){
+  var classType,
+      classTypeCollection,
+      className,
+      classDoc,
+      privateElements = [],
+      publicElements = [],
+      view,
+      index;
+  
+  
+  for (classType in IBERO.classList){
+    classTypeCollection = IBERO.classList[classType];
+    for (className in classTypeCollection){
+      classDoc = classTypeCollection[className].DOC;
+      
+      console.log(className,'    ['+classType+']');
+      
+      if (classDoc.builder){
+        privateElements = classDoc.builder.toString().match(/priv\.[a-zA-Z0-9]*\s*[=|:]/g);
+        
+        if (privateElements && privateElements.length > 0){
+          for (index in privateElements){
+            privateElements[index] = privateElements[index].split(' ')[0].split('.')[1];
+          }
+          
+          console.log('\tprivate','\n\t\t'+privateElements.join('\n\t\t'));
+        }
+      }
+      if (classDoc.publ){
+         publicElements = classDoc.publ.toString().match(/[a-zA-Z0-9]*\s*:\s*function/g);
+        
+        if (publicElements && publicElements.length > 0){
+          for (index in publicElements){
+            publicElements[index] = publicElements[index].split(' ')[0].split(':')[0];
+          }
+          
+          console.log('\tpublic','\n\t\t'+publicElements.join('\n\t\t'));
+        }
+      }
+      if (classDoc.view){
+        console.log('\tview','\n\t\t'+classDoc.view.name);
+        
+      }
+      if(classDoc.mainDomElement){
+        console.log('\tDomElement','\n\t\t'+classDoc.mainDomElement.template);
+      }
+     
+      console.log('------------------------------------------------------------');
+    }
+  }
+};
 
 
 
@@ -368,9 +416,6 @@ IBERO.hasOnlyFunctions = function(className,classObject){
   Extends:'inheritMe',
 
   builder : function(priv,params){
-      priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
-      priv.movements     = (params.movements      ? params.movements     :  []                          );
-  
   },
   
   publ: function(priv,params){
