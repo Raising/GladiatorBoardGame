@@ -273,8 +273,19 @@ IBERO.hasAllRequiredMethods = function(className,classObject,classType){
       inheritedMethods,
       method; 
   
-  if (classObject.Extends !== undefined){
-    proxyPubl = classObject.publ({},{});
+  if (classObject.publ !== undefined){
+     proxyPubl = classObject.publ({},{});
+  }
+  else{
+    if (classObject.Implements !== undefined){
+      return false;
+    }else{
+      return true;
+    }
+  }
+    
+ if (classObject.Extends !== undefined){
+   
     inheritedMethods = IBERO.classList[classType][classObject.Extends].DOC.publ({},{});
     for (method in inheritedMethods){
        if (inheritedMethods.hasOwnProperty(method) && typeof inheritedMethods[method] === 'function'){
@@ -335,8 +346,8 @@ IBERO.publishDocumentation = function(){
     classTypeCollection = IBERO.classList[classType];
     for (className in classTypeCollection){
       classDoc = classTypeCollection[className].DOC;
-      
-      console.log(className,'    ['+classType+']');
+      IBERO.getClassDocumentation(classType,className);
+      console.log('%c' +className + '    ['+classType+']', 'color:green;');
       
       if (classDoc.builder){
         privateElements = classDoc.builder.toString().match(/priv\.[a-zA-Z0-9]*\s*[=|:]/g);
@@ -357,15 +368,15 @@ IBERO.publishDocumentation = function(){
             publicElements[index] = publicElements[index].split(' ')[0].split(':')[0];
           }
           
-          console.log('\tpublic','\n\t\t'+publicElements.join('\n\t\t'));
+          console.log('\tpublic'+'\n\t\t'+publicElements.join('\n\t\t'));
         }
       }
       if (classDoc.view){
-        console.log('\tview','\n\t\t'+classDoc.view.name);
+        console.log('\tview'+'\n\t\t'+classDoc.view.name);
         
       }
       if(classDoc.mainDomElement){
-        console.log('\tDomElement','\n\t\t'+classDoc.mainDomElement.template);
+        console.log('\tDomElement'+'\n\t\t'+classDoc.mainDomElement.template);
       }
      
       console.log('------------------------------------------------------------');
@@ -375,7 +386,44 @@ IBERO.publishDocumentation = function(){
 
 
 
-
+IBERO.getClassDocumentation = function(classType,className){
+  var index,
+      classDoc,
+      refinedDoc = {};
+  
+    classDoc = IBERO.classList[classType][className].DOC;
+      
+      console.log('%c' +className + '    ['+classType+']', 'color:green;');
+      
+      if (classDoc.builder){
+        refinedDoc.privateElements = classDoc.builder.toString().match(/priv\.[a-zA-Z0-9]*\s*[=|:]/g);
+        
+        if (refinedDoc.privateElements && refinedDoc.privateElements.length > 0){
+          for (index in refinedDoc.privateElements){
+            refinedDoc.privateElements[index] = refinedDoc.privateElements[index].split(' ')[0].split('.')[1];
+          }
+        }
+      }
+      if (classDoc.publ){
+         refinedDoc.publicElements = classDoc.publ.toString().match(/[a-zA-Z0-9]*\s*:\s*function/g);
+        
+        if (refinedDoc.publicElements && refinedDoc.publicElements.length > 0){
+          for (index in refinedDoc.publicElements){
+            refinedDoc.publicElements[index] = refinedDoc.publicElements[index].split(' ')[0].split(':')[0];
+          }
+        }
+      }
+      if (classDoc.view){
+        refinedDoc.view = classDoc.view.name;
+        
+      }
+      if(classDoc.mainDomElement){
+        refinedDoc.mainDomElement = classDoc.mainDomElement.template;
+      }
+     
+     console.log(refinedDoc);
+  return refinedDoc;
+};
 
 
 
@@ -387,7 +435,7 @@ IBERO.publishDocumentation = function(){
 
 ò_ó = IBERO;
 
-
+/*
 
 ò_ó.Describe.Interface('dummyInterface',{
   sayNon:function(){},
@@ -429,8 +477,9 @@ IBERO.publishDocumentation = function(){
 
 
 nacho = ò_ó.Create.Controller('dummyController');
+
 console.log(nacho);
 
-
+*/
 
 

@@ -31,13 +31,19 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.Controller('FieldEntityController',{
 
   builder: function(priv,params){
-    priv.equipment     = (params.equipment      ? params.equipment     :  []                          );
+    ò_ó.classDefaulter(params.optionSelector,'Movement2DSelector');
+    
+    priv.equipment     = (params.equipment      ? params.equipment     :  []      );
     priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
     priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
-    priv.displacement  = (params.displacement   ? params.displacement  :  ò_ó.Create.Controller('Displacement', {positionsArray:params.movements})); 
+    priv.optionSelector  = ò_ó.Create({classType     :'controller',
+                                     interfaceClass  :'OptionsSelector',
+                                     instanceClass   : params.optionSelector, 
+                                     builderParams   : {positionsArray:params.movements}}); 
+                                     
  
     priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
-    priv.view.addToDomElement(priv.displacement);
+    priv.view.addToDomElement(priv.optionSelector);
   },
   
   view: { name: 'FieldEntityView',
@@ -73,7 +79,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
         var objectClicked = ò_ó.getObjectFromDomElement(event.target);
         
         if (objectClicked.getObjectType() === 'FieldEntityController'){ // the object is itself
-          priv.displacement.toggleVisibility(); // shall we open a menu instead of only togle movements optiones visibilitiy
+          priv.optionSelector.toggleVisibility(); // shall we open a menu instead of only togle movements optiones visibilitiy
         }
         else{
           objectClicked.onClick(priv.publ);  
@@ -86,7 +92,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
        console.log('hoverout');
       },
       setDisplacementVisibility: function(visibility){
-        priv.displacement.setVisibility(visibility);
+        priv.optionSelector.setVisibility(visibility);
       }
     };
   }
@@ -161,9 +167,14 @@ GBG.ARC_DEEP_DISTANCE = 5;
 });
 
 
+ò_ó.Describe.Interface('OptionSelector',{
+  sayNon:function(){},
+  sayHi:function(){}
+});
 
-
-ò_ó.Describe.Controller('Displacement' ,{
+ò_ó.Describe.Controller('Movement2DSelector' ,{
+  Implements:['OptionSelector'],
+  
   builder: function(priv,params){
     priv.positionOptions = params.positionsArray ? params.positionsArray : [];
     priv.movementOptions = [];
@@ -173,7 +184,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
   },
   
   view:{
-    name:'DisplacementView'
+    name:'Movement2DSelectorView'
   },
   
   publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
@@ -295,7 +306,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
   }
 });
 
-ò_ó.Describe.View('DisplacementView',{
+ò_ó.Describe.View('Movement2DSelectorView',{
   
   builder: function(priv,params){
   },
