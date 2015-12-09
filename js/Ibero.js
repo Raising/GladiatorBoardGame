@@ -203,12 +203,14 @@ IBERO.createPublic = function(priv,className,classObject,params,classType){
     if (classObject.Extends !== undefined){
       heritage = new IBERO.classList[classType][classObject.Extends](params,priv);
       IBERO.InjectIdentifiers(priv,className);
-      priv.publ = classObject.publ(priv,params);
+      priv.publ = {}; 
+      classObject.publ(priv.publ,priv,params);
       Object.setPrototypeOf(priv.publ, heritage);
     }
     else{
       IBERO.InjectIdentifiers(priv,className);
-  	  priv.publ = classObject.publ(priv,params);
+  	  priv.publ = {}; 
+      classObject.publ(priv.publ,priv,params);
     }
 };
 
@@ -246,11 +248,14 @@ IBERO.InjectMainDomElement = function(priv,params){
   	  priv.mainDomElement = ò_ó.buildDomElement(priv.publ,params.mainDomElement.template);
   	
     	priv.publ.getDomElement = function(){
+    	    console.warn('getDomElement is deprecated');
           return priv.mainDomElement;
       };
-      priv.publ.addToDomElement = function(addedDomElement){
-          priv.mainDomElement.append(addedDomElement.getView().getDomElement());
+      
+      priv.publ.renderTo = function(element){
+          element.append(priv.mainDomElement);
       };
+      
       priv.publ.cleanDomElement = function(){
           priv.mainDomElement.empty();
       };
@@ -269,12 +274,12 @@ IBERO.validateClass = function (className,classObject,classType){
 };
 
 IBERO.hasAllRequiredMethods = function(className,classObject,classType){
-  var proxyPubl,
+  var proxyPubl = {},
       inheritedMethods,
       method; 
   
   if (classObject.publ !== undefined){
-     proxyPubl = classObject.publ({},{});
+     classObject.publ(proxyPubl,{},{});
   }
   else{
     if (classObject.Implements !== undefined){
@@ -293,7 +298,6 @@ IBERO.hasAllRequiredMethods = function(className,classObject,classType){
        }
     }
   }
-  
   
   if (classObject.Implements !== undefined){
       classObject.Implements.forEach(function(extendedClass){
@@ -329,8 +333,6 @@ IBERO.hasOnlyFunctions = function(className,classObject){
 };
 
 
-
-
 IBERO.publishDocumentation = function(){
   var classType,
       classTypeCollection,
@@ -361,11 +363,11 @@ IBERO.publishDocumentation = function(){
         }
       }
       if (classDoc.publ){
-         publicElements = classDoc.publ.toString().match(/[a-zA-Z0-9]*\s*:\s*function/g);
+         publicElements = classDoc.publ.toString().match(/publ\.[a-zA-Z0-9]*\s*[=|:]/g);
         
         if (publicElements && publicElements.length > 0){
           for (index in publicElements){
-            publicElements[index] = publicElements[index].split(' ')[0].split(':')[0];
+            publicElements[index] = publicElements[index].split(' ')[0].split('.')[1];
           }
           
           console.log('\tpublic'+'\n\t\t'+publicElements.join('\n\t\t'));
@@ -405,11 +407,11 @@ IBERO.getClassDocumentation = function(classType,className){
         }
       }
       if (classDoc.publ){
-         refinedDoc.publicElements = classDoc.publ.toString().match(/[a-zA-Z0-9]*\s*:\s*function/g);
+         refinedDoc.publicElements = classDoc.publ.toString().match(/publ\.[a-zA-Z0-9]*\s*[=|:]/g);
         
         if (refinedDoc.publicElements && refinedDoc.publicElements.length > 0){
           for (index in refinedDoc.publicElements){
-            refinedDoc.publicElements[index] = refinedDoc.publicElements[index].split(' ')[0].split(':')[0];
+            refinedDoc.publicElements[index] = refinedDoc.publicElements[index].split(' ')[0].split('.')[1];
           }
         }
       }
@@ -435,8 +437,8 @@ IBERO.getClassDocumentation = function(classType,className){
 
 ò_ó = IBERO;
 
-/*
 
+/*
 ò_ó.Describe.Interface('dummyInterface',{
   sayNon:function(){},
   sayHi:function(){}
@@ -446,7 +448,7 @@ IBERO.getClassDocumentation = function(classType,className){
 ò_ó.Describe.Controller('inheritMe',{
 
   builder : function(priv,params){
-      priv.fruit     = (params.fruit      ? params.fruit     :  []                          );
+      priv.fruit     = (params.fruit      ? params.fruit     :  [] );
   },
   
   publ: function(priv,params){

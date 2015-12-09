@@ -31,69 +31,70 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.Controller('FieldEntityController',{
 
   builder: function(priv,params){
-    ò_ó.classDefaulter(params.optionSelector,'Movement2DSelector');
-    
     priv.equipment     = (params.equipment      ? params.equipment     :  []      );
     priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
     priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
-    priv.optionSelector  = ò_ó.Create({classType     :'controller',
-                                     interfaceClass  :'OptionsSelector',
-                                     instanceClass   : params.optionSelector, 
-                                     builderParams   : {positionsArray:params.movements}}); 
-                                     
- 
+    priv.optionSelector  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Movement2DSelector',{positionsArray:params.movements})  );
+    
+    //ò_ó.Create('OptionsSelector', {positionsArray:params.movements},params.classes.optionSelector); 
+    
     priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
-    priv.view.addToDomElement(priv.optionSelector);
+    priv.optionSelector.renderTo(priv.view.getDomElement());
   },
   
   view: { name: 'FieldEntityView',
           params: {}
   },
-
-  publ: function(priv,params){
-    return {
-      insertViewInto : function(element){
-        $(element).append(priv.view.getDomElement());
-      },
-      relativeMovement : function(params){
-        priv.localization.modifyPositionRelatedToOrientation(params.coordinates);
-        priv.localization.modifyRotation(params.rotation);
-        priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
-      },
-      forcePosition : function(params){
-         priv.localization.setPosition(params.coordinates);
-         priv.localization.setRotation(params.rotation);
-         priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
-      },
-      absoluteMovement : function(params){},
-      getEquipment : function(){
-        return priv.equipment;
-      },
-      refreshEquipment : function(){
-        var numEquipment = priv.equipment.length;
-        for (var i = 0 ; i<numEquipment; i++ ){
-          priv.view.addActionArc(priv.equipment[i]);
-        }
-      },
-      onClick : function(event) {
-        var objectClicked = ò_ó.getObjectFromDomElement(event.target);
-        
-        if (objectClicked.getObjectType() === 'FieldEntityController'){ // the object is itself
-          priv.optionSelector.toggleVisibility(); // shall we open a menu instead of only togle movements optiones visibilitiy
-        }
-        else{
-          objectClicked.onClick(priv.publ);  
-        }
-      },
-      onHoverIn : function(){
-        console.log('hoverin');
-      },
-      onHoverOut : function(){
-       console.log('hoverout');
-      },
-      setDisplacementVisibility: function(visibility){
-        priv.optionSelector.setVisibility(visibility);
+  
+  publ: function(publ,priv,params){
+    
+    publ.renderTo = function(element){
+      priv.view.renderTo($(element));
+    };
+    publ.relativeMovement = function(params){
+      priv.localization.modifyPositionRelatedToOrientation(params.coordinates);
+      priv.localization.modifyRotation(params.rotation);
+      priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+    };
+    publ.forcePosition = function(params){
+       priv.localization.setPosition(params.coordinates);
+       priv.localization.setRotation(params.rotation);
+       priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+    };
+    publ.absoluteMovement = function(params){};
+    
+    publ.getEquipment = function(){
+      return priv.equipment;
+    };
+    
+    publ.refreshEquipment = function(){
+      var numEquipment = priv.equipment.length;
+      for (var i = 0 ; i<numEquipment; i++ ){
+        priv.view.addActionArc(priv.equipment[i]);
       }
+    };
+    
+    publ.onClick = function(event) {
+      var objectClicked = ò_ó.getObjectFromDomElement(event.target);
+      
+      if (objectClicked.getObjectType() === 'FieldEntityController'){ // the object is itself
+        priv.optionSelector.toggleVisibility(); // shall we open a menu instead of only togle movements optiones visibilitiy
+      }
+      else{
+        objectClicked.onClick(priv.publ);  
+      }
+    };
+    
+    publ.onHoverIn = function(){
+      console.log('hoverin');
+    };
+    
+    publ.onHoverOut = function(){
+     console.log('hoverout');
+    };
+    
+    publ.setDisplacementVisibility= function(visibility){
+      priv.optionSelector.setVisibility(visibility);
     };
   }
 });
@@ -103,73 +104,77 @@ GBG.ARC_DEEP_DISTANCE = 5;
 ò_ó.Describe.Controller('Localization', {
   
   builder: function(priv,params){
-    priv.coordinates = params.coordinates ? params.coordinates : {x: 200, y : 300};
-    priv.rotation = params.rotation ? params.rotation : 0;
-    
-    priv.calculateStraightMovementCoeficient = function(){
-      return {coefX:Math.sin(Math.radians(priv.rotation)),coefY:(-1) * Math.cos(Math.radians(priv.rotation))};
-    };
-    priv.calculateSideMovementCoeficient = function(){
-      return {coefX:Math.cos(Math.radians(priv.rotation)),coefY:(1) * Math.sin(Math.radians(priv.rotation))};
-    };
-    priv.modifyPosition = function(params){
-        priv.coordinates.x += params.x;
-        priv.coordinates.y += params.y;
-    };
+      priv.coordinates = params.coordinates ? params.coordinates : {x: 200, y : 300};
+      priv.rotation = params.rotation ? params.rotation : 0;
+      
+      priv.calculateStraightMovementCoeficient = function(){
+        return {coefX:Math.sin(Math.radians(priv.rotation)),coefY:(-1) * Math.cos(Math.radians(priv.rotation))};
+      };
+      priv.calculateSideMovementCoeficient = function(){
+        return {coefX:Math.cos(Math.radians(priv.rotation)),coefY:(1) * Math.sin(Math.radians(priv.rotation))};
+      };
+      priv.modifyPosition = function(params){
+          priv.coordinates.x += params.x;
+          priv.coordinates.y += params.y;
+      };
   },
   
-  publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-    return {
-      setPosition: function(params){
+  publ : function(publ,priv,params){
+
+      publ.setPosition= function(params){
           priv.coordinates.x = params.x;
           priv.coordinates.y = params.y;
-      },
-      setX : function(x){
+      };
+      publ.setX = function(x){
           priv.coordinates.x = x;
-      },
-      setY : function(y){
+      };
+      publ.setY = function(y){
           priv.coordinates.y = y;
-      },
-      setRotation : function(rotation){
+      };
+      publ.setRotation = function(rotation){
           priv.rotation = rotation;
-      },
-      modifyX : function(x){
+      };
+      publ.modifyX = function(x){
           priv.coordinates.x += x;
-      },
-      modifyY : function(y){
+      };
+      publ.modifyY = function(y){
           priv.coordinates.y += y;
-      },
-      modifyRotation : function(rotation){
+      };
+      publ.modifyRotation = function(rotation){
           priv.rotation += rotation;
-      },
-      getPosition: function(){
+      };
+      publ.getPosition= function(){
         return priv.coordinates;
-      },
-      getRotation: function(){
+      };
+      publ.getRotation= function(){
         return priv.rotation;
-      },
-      modifyPositionRelatedToOrientation: function(params){ //Straight, side
+      };
+      publ.modifyPositionRelatedToOrientation= function(params){ //Straight, side
         var straightCoeficients = priv.calculateStraightMovementCoeficient();
         var sideCoeficients = priv.calculateSideMovementCoeficient();
         
         priv.modifyPosition({x:straightCoeficients.coefX * params.straight + sideCoeficients.coefX * params.side,
                         y:straightCoeficients.coefY * params.straight + sideCoeficients.coefY * params.side});
-      },
-      getPositionRelatedToOrientation: function(params){ //Straight, side
+      };
+      publ.getPositionRelatedToOrientation= function(params){ //Straight, side
         var straightCoeficients = priv.calculateStraightMovementCoeficient();
         var sideCoeficients = priv.calculateSideMovementCoeficient();
         
         return({x:straightCoeficients.coefX * params.straight + sideCoeficients.coefX * params.side,
                         y:straightCoeficients.coefY * params.straight + sideCoeficients.coefY * params.side});
-      },
-    };
+      };
+
   }
 });
 
 
 ò_ó.Describe.Interface('OptionSelector',{
-  sayNon:function(){},
-  sayHi:function(){}
+  classType: 'controller',
+  defaultImplementer:'Movement2DSelector',
+  toggleVisibility:function(){},
+  setVisibility:function(){},
+  renderTo:function(){},
+  
 });
 
 ò_ó.Describe.Controller('Movement2DSelector' ,{
@@ -187,9 +192,9 @@ GBG.ARC_DEEP_DISTANCE = 5;
     name:'Movement2DSelectorView'
   },
   
-  publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-    return {
-      loadMovementOptions : function(){
+  publ : function(publ,priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+
+      publ.loadMovementOptions = function(){
         var numberOfMovements = priv.positionOptions.length;
         priv.view.cleanDomElement();
         priv.movementOptions = [];
@@ -197,33 +202,33 @@ GBG.ARC_DEEP_DISTANCE = 5;
         for (var i = 0;i <numberOfMovements; i++){
           var newMovement = ò_ó.Create.Controller('MovementController',priv.positionOptions[i]);
           priv.movementOptions.push(newMovement);
-          priv.view.addToDomElement(newMovement);
+          newMovement.renderTo(priv.view.getDomElement());
           newMovement.setViewPosition();
         }
-      },
-      setPositionOptions : function(positionsArray){
+      };
+      publ.setPositionOptions = function(positionsArray){
          priv.positionOptions = positionsArray;
-      },
-      attachTo : function(element){
-        $(element).append(priv.container);
-      },
-      setVisibility: function(visibility){
+      };
+      publ.renderTo = function(element){
+        priv.view.renderTo(element);
+      };
+      publ.setVisibility= function(visibility){
           priv.view.setVisibility(visibility);
           
           priv.visible = visibility;
-      },
-      getView: function(){
+      };
+      publ.getView = function(){
         return priv.view;
-      },
-      toggleVisibility: function(){
+      };
+      publ.toggleVisibility = function(){
           if (!priv.visible){
             priv.view.setVisibility(true);
           }else{
             priv.view.setVisibility(false);
           }
           priv.visible = !priv.visible;
-      }
-    };
+      };
+
   }
 });
 
@@ -237,22 +242,22 @@ GBG.ARC_DEEP_DISTANCE = 5;
     name: 'MovementView'
   },
   
-  publ : function(priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
-    return {
-      getView: function(){
-        return priv.view;
-      },
-      setViewPosition : function(){
+  publ : function(publ,priv,params){// si se quiere hacer herencia prototipada poner prototype: objetoPrototipo
+ 
+      publ.renderTo = function(element){
+         priv.view.renderTo(element);
+      };
+      publ.setViewPosition = function(){
         priv.view.setLocation(priv.situation.getPosition());
-      },
-      onClick : function(parentEntity){
+      };
+      publ.onClick = function(parentEntity){
         parentEntity.relativeMovement(priv.publ.getLocation());
         parentEntity.setDisplacementVisibility(false);
-      },
-      getLocation :function(){
+      };
+      publ.getLocation =function(){
         return priv.situation.getPositionDisplacementFormat();
-      },
-    };
+      };
+ 
   }
 });
 
@@ -264,15 +269,15 @@ GBG.ARC_DEEP_DISTANCE = 5;
     priv.template = params.template ? params.template : {};
   },
   
-  publ : function(priv,params){
-    return {
-      getPositionDisplacementFormat: function(){
+  publ : function(publ,priv,params){
+ 
+      publ.getPositionDisplacementFormat= function(){
         return {coordinates: {straight:(-1) * priv.coordinates.y,side:priv.coordinates.x}, rotation:priv.rotation};
-      },
-      getPosition: function(){
+      };
+      publ.getPosition= function(){
         return {coordinates:priv.coordinates, rotation:priv.rotation};
-      }
-    };
+      };
+
   }
 });
 
@@ -281,8 +286,8 @@ GBG.ARC_DEEP_DISTANCE = 5;
   
   builder: function(priv,params){
     priv.controller = params.controller;
-    priv.arcHandler =  ò_ó.Create.Controller('ArcHandler',params);
-    priv.mainDomElement.append(priv.arcHandler.getArcGraphics());
+    //priv.arcHandler =  ò_ó.Create.Controller('ArcHandler',params);
+    //priv.mainDomElement.append(priv.arcHandler.getArcGraphics());
     
     $(priv.mainDomElement).click(function(event) {
        priv.publ.ΦfireEvent('click',event);
@@ -293,16 +298,16 @@ GBG.ARC_DEEP_DISTANCE = 5;
     template: '<div class="XwingMainContainer"></div>'
   },
   
-  publ : function(priv,params){
-    return {
-      moveTo:function(position){
+  publ : function(publ,priv,params){
+   
+      publ.moveTo=function(position){
         var tl = new TimelineMax();
         tl.to(priv.mainDomElement,  0.5, { x:position.coordinates.x,y:position.coordinates.y,rotation:position.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      },
-      addActionArc : function(params){
-        priv.arcHandler.addActionArc(params);
-      }
-    };
+      };
+      publ.addActionArc = function(params){
+       // priv.arcHandler.addActionArc(params);
+      };
+
   }
 });
 
@@ -315,17 +320,17 @@ GBG.ARC_DEEP_DISTANCE = 5;
     template: '<div class="displacementContainer"></div>'
   },
   
-  publ : function(priv,params){
-    return {
-      setVisibility: function(visibility){
+  publ : function(publ,priv,params){
+
+      publ.setVisibility= function(visibility){
           if (visibility){
             $(priv.mainDomElement).css({display:"initial"});
           }else{
             $(priv.mainDomElement).css({display:"none"});
           }
           priv.visible = visibility;
-      },
-    };
+      };
+
   }
 });
 
@@ -338,20 +343,20 @@ GBG.ARC_DEEP_DISTANCE = 5;
     template: '<div class="movementView"></div>'
   },
   
-  publ : function(priv,params){
-    return {
-      setLocation : function(params){
+  publ : function(publ,priv,params){
+
+      publ.setLocation = function(params){
         TweenMax.to(priv.mainDomElement,0.3,{ x:       params.coordinates.x,
                                               y:       params.coordinates.y,
                                               rotation:params.rotation,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      },
-      hide : function(){
+      };
+      publ.hide = function(){
         TweenMax.to(priv.mainDomElement,0.3,{ opacity:0,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      },
-      show : function(){
+      };
+      publ.show = function(){
         TweenMax.to(priv.mainDomElement,0.3,{ opacity:0.4,transformOrigin:"50% 50%", ease:Sine.easeOut});
-      }
-    };
+      };
+
   }
 });
 
@@ -361,15 +366,14 @@ GBG.ARC_DEEP_DISTANCE = 5;
      priv.movementOptions = params ? params : [];
   },
   
-  publ: function(priv,params){
-    return {
-      forEach: function(callBack){
+  publ: function(publ,priv,params){
+
+      publ.forEach= function(callBack){
         var index;
         for (index in priv.movementOptions){
           callBack(priv.movementOptions[index]);
         }
-      }
-    };
+      };
   }
 });
 
