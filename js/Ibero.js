@@ -62,7 +62,7 @@ IBERO.Describe = function(className,classObject){
 	};
 };
 
-IBERO.Create = function(className,params){
+/*IBERO.Create = function(className,params){
 	var newObject = new IBERO.classList[className](params);
 	newObject.objectType = className;
 	newObject.objectId = newObject.ΦId() + '_' + className ;
@@ -71,6 +71,28 @@ IBERO.Create = function(className,params){
 	    newObject.init();
 	  }
 	  IBERO.CREATED_OBJECTS[newObject.objectId] = newObject;
+	  return newObject;
+};*/
+
+IBERO.Create = function(intefaceClass,params,className){
+  var interfaceInstance,
+      classType,
+      newObject;
+  
+  interfaceInstance = IBERO.classList.interface[intefaceClass]();
+  classType = interfaceInstance.classType;
+    
+  if (className === undefined){
+     className = interfaceInstance.defaultClass;
+  }
+  
+	newObject = new IBERO.classList[classType][className](params);
+	  
+	  if (newObject.init){
+	    newObject.init();
+	  }
+	  
+	  IBERO.CREATED_OBJECTS[newObject.getId()] = newObject;
 	  return newObject;
 };
 
@@ -248,7 +270,6 @@ IBERO.InjectMainDomElement = function(priv,params){
   	  priv.mainDomElement = ò_ó.buildDomElement(priv.publ,params.mainDomElement.template);
   	
     	priv.publ.getDomElement = function(){
-    	    console.warn('getDomElement is deprecated');
           return priv.mainDomElement;
       };
       
@@ -289,14 +310,8 @@ IBERO.hasAllRequiredMethods = function(className,classObject,classType){
     }
   }
     
- if (classObject.Extends !== undefined){
-   
-    inheritedMethods = IBERO.classList[classType][classObject.Extends].DOC.publ({},{});
-    for (method in inheritedMethods){
-       if (inheritedMethods.hasOwnProperty(method) && typeof inheritedMethods[method] === 'function'){
-  	        proxyPubl[method] = inheritedMethods[method];
-       }
-    }
+  if (classObject.Extends !== undefined){
+    IBERO.classList[classType][classObject.Extends].DOC.publ(proxyPubl,{},{});
   }
   
   if (classObject.Implements !== undefined){
@@ -437,8 +452,8 @@ IBERO.getClassDocumentation = function(classType,className){
 
 ò_ó = IBERO;
 
-
 /*
+
 ò_ó.Describe.Interface('dummyInterface',{
   sayNon:function(){},
   sayHi:function(){}
@@ -448,14 +463,12 @@ IBERO.getClassDocumentation = function(classType,className){
 ò_ó.Describe.Controller('inheritMe',{
 
   builder : function(priv,params){
-      priv.fruit     = (params.fruit      ? params.fruit     :  [] );
+      priv.fruit     = (params.fruit      ? params.fruit :  [] );
   },
   
-  publ: function(priv,params){
-    return {
-      sayHi : function(){
-        console.log('hellow inherited World');
-      }
+  publ: function(publ,priv,params){
+    publ.sayHi = function(){
+      console.log('hellow inherited World');
     };
   }
 });
@@ -468,12 +481,12 @@ IBERO.getClassDocumentation = function(classType,className){
   builder : function(priv,params){
   },
   
-  publ: function(priv,params){
-    return {
-      sayNon : function(){
+  publ: function(publ,priv,params){
+    
+      publ.sayNon = function(){
         console.log('NO  NO NO NO ');
-      }
-    };
+      };
+    
   }
 });
 
@@ -482,6 +495,6 @@ nacho = ò_ó.Create.Controller('dummyController');
 
 console.log(nacho);
 
-*/
 
+*/
 

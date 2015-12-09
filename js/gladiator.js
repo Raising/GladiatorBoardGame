@@ -33,10 +33,9 @@ GBG.ARC_DEEP_DISTANCE = 5;
   builder: function(priv,params){
     priv.equipment     = (params.equipment      ? params.equipment     :  []      );
     priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
-    priv.localization  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Localization')  );
-    priv.optionSelector  = (params.localization   ? params.localization  :  ò_ó.Create.Controller('Movement2DSelector',{positionsArray:params.movements})  );
-    
-    //ò_ó.Create('OptionsSelector', {positionsArray:params.movements},params.classes.optionSelector); 
+    priv.situationManipulator   =     ò_ó.Create('SituationManipulator', {}          ,params.situationManipulator); 
+    priv.optionSelector  = ò_ó.Create('OptionSelector', {optionsArray:params.options},params.optionSelector); 
+    //
     
     priv.ΦlistenEvent(priv.view,'click','onClick',priv.publ);
     priv.optionSelector.renderTo(priv.view.getDomElement());
@@ -52,14 +51,14 @@ GBG.ARC_DEEP_DISTANCE = 5;
       priv.view.renderTo($(element));
     };
     publ.relativeMovement = function(params){
-      priv.localization.modifyPositionRelatedToOrientation(params.coordinates);
-      priv.localization.modifyRotation(params.rotation);
-      priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+      priv.situationManipulator.modifyPositionRelatedToOrientation(params.coordinates);
+      priv.situationManipulator.modifyRotation(params.rotation);
+      priv.view.moveTo({coordinates:priv.situationManipulator.getPosition(),rotation:priv.situationManipulator.getRotation()});
     };
     publ.forcePosition = function(params){
-       priv.localization.setPosition(params.coordinates);
-       priv.localization.setRotation(params.rotation);
-       priv.view.moveTo({coordinates:priv.localization.getPosition(),rotation:priv.localization.getRotation()});
+       priv.situationManipulator.setPosition(params.coordinates);
+       priv.situationManipulator.setRotation(params.rotation);
+       priv.view.moveTo({coordinates:priv.situationManipulator.getPosition(),rotation:priv.situationManipulator.getRotation()});
     };
     publ.absoluteMovement = function(params){};
     
@@ -94,14 +93,21 @@ GBG.ARC_DEEP_DISTANCE = 5;
     };
     
     publ.setDisplacementVisibility= function(visibility){
-      priv.optionSelector.setVisibility(visibility);
+      priv.optionSelector.toggleVisibility(visibility);
     };
   }
 });
 
+ò_ó.Describe.Interface('SituationManipulator',{
+  classType: 'controller',
+  defaultClass:'xWing2DSituationManipulator',
+  setPosition:function(){},
+  getPosition:function(){},
+  
+});
 
-
-ò_ó.Describe.Controller('Localization', {
+ò_ó.Describe.Controller('xWing2DSituationManipulator', {
+  Implements:['SituationManipulator'],
   
   builder: function(priv,params){
       priv.coordinates = params.coordinates ? params.coordinates : {x: 200, y : 300};
@@ -170,9 +176,8 @@ GBG.ARC_DEEP_DISTANCE = 5;
 
 ò_ó.Describe.Interface('OptionSelector',{
   classType: 'controller',
-  defaultImplementer:'Movement2DSelector',
+  defaultClass:'Movement2DSelector',
   toggleVisibility:function(){},
-  setVisibility:function(){},
   renderTo:function(){},
   
 });
@@ -181,7 +186,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
   Implements:['OptionSelector'],
   
   builder: function(priv,params){
-    priv.positionOptions = params.positionsArray ? params.positionsArray : [];
+    priv.positionOptions = params.optionsArray ? params.optionsArray : [];
     priv.movementOptions = [];
     priv.visible = true;
     
@@ -206,29 +211,33 @@ GBG.ARC_DEEP_DISTANCE = 5;
           newMovement.setViewPosition();
         }
       };
+      
       publ.setPositionOptions = function(positionsArray){
          priv.positionOptions = positionsArray;
       };
+      
       publ.renderTo = function(element){
         priv.view.renderTo(element);
       };
-      publ.setVisibility= function(visibility){
-          priv.view.setVisibility(visibility);
-          
-          priv.visible = visibility;
-      };
+      
       publ.getView = function(){
         return priv.view;
       };
-      publ.toggleVisibility = function(){
+      
+      publ.toggleVisibility = function(visibility){
+        if (visibility !== undefined){
+          priv.view.setVisibility(visibility);
+          priv.visible = visibility;
+        }
+        else{
           if (!priv.visible){
             priv.view.setVisibility(true);
           }else{
             priv.view.setVisibility(false);
           }
           priv.visible = !priv.visible;
+        }
       };
-
   }
 });
 
@@ -252,7 +261,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
       };
       publ.onClick = function(parentEntity){
         parentEntity.relativeMovement(priv.publ.getLocation());
-        parentEntity.setDisplacementVisibility(false);
+        parentEntity.situationManipulator(false);
       };
       publ.getLocation =function(){
         return priv.situation.getPositionDisplacementFormat();
