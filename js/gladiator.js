@@ -33,7 +33,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
   builder: function(priv,params){
     priv.equipment     = (params.equipment      ? params.equipment     :  []      );
     priv.statusHandler = (params.statusHandler  ? params.statusHandler :  ò_ó.Create.Controller('StatusHandler') );
-    priv.situationManipulator   =     ò_ó.Create('SituationManipulator', {}          ,params.situationManipulator); 
+    priv.situationTool   =     ò_ó.Create('SituationTool', {}          ,params.situationTool); 
     priv.optionSelector  = ò_ó.Create('OptionSelector', {optionsArray:params.options},params.optionSelector); 
     //
     
@@ -51,14 +51,14 @@ GBG.ARC_DEEP_DISTANCE = 5;
       priv.view.renderTo($(element));
     };
     publ.relativeMovement = function(params){
-      priv.situationManipulator.modifyPositionRelatedToOrientation(params.coordinates);
-      priv.situationManipulator.modifyRotation(params.rotation);
-      priv.view.moveTo({coordinates:priv.situationManipulator.getPosition(),rotation:priv.situationManipulator.getRotation()});
+      priv.situationTool.modifyPositionRelatedToOrientation(params.coordinates);
+      priv.situationTool.modifyRotation(params.rotation);
+      priv.view.moveTo({coordinates:priv.situationTool.getPosition(),rotation:priv.situationTool.getRotation()});
     };
     publ.forcePosition = function(params){
-       priv.situationManipulator.setPosition(params.coordinates);
-       priv.situationManipulator.setRotation(params.rotation);
-       priv.view.moveTo({coordinates:priv.situationManipulator.getPosition(),rotation:priv.situationManipulator.getRotation()});
+       priv.situationTool.setPosition(params.coordinates);
+       priv.situationTool.setRotation(params.rotation);
+       priv.view.moveTo({coordinates:priv.situationTool.getPosition(),rotation:priv.situationTool.getRotation()});
     };
     publ.absoluteMovement = function(params){};
     
@@ -98,7 +98,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
   }
 });
 
-ò_ó.Describe.Interface('SituationManipulator',{
+ò_ó.Describe.Interface('SituationTool',{
   classType: 'controller',
   defaultClass:'xWing2DSituationManipulator',
   setPosition:function(){},
@@ -107,7 +107,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
 });
 
 ò_ó.Describe.Controller('xWing2DSituationManipulator', {
-  Implements:['SituationManipulator'],
+  Implements:['SituationTool'],
   
   builder: function(priv,params){
       priv.coordinates = params.coordinates ? params.coordinates : {x: 200, y : 300};
@@ -261,7 +261,7 @@ GBG.ARC_DEEP_DISTANCE = 5;
       };
       publ.onClick = function(parentEntity){
         parentEntity.relativeMovement(priv.publ.getLocation());
-        parentEntity.situationManipulator(false);
+        parentEntity.setDisplacementVisibility(false);
       };
       publ.getLocation =function(){
         return priv.situation.getPositionDisplacementFormat();
